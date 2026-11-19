@@ -84,6 +84,15 @@ class AsyncStateHost<T> extends StatelessWidget implements AsyncStateView {
 
   @override
   AsyncPhase get phase {
+    // hasError 优先：riverpod 3 的 AsyncError 默认保留旧值（hasValue 同真），
+    // 错误态必须呈现（DESIGN.md §8），不被旧数据遮蔽；
+    // 保留旧数据的「刷新/上拉失败」走 AsyncData 字段（loadMoreFailed），
+    // 不进本分支。
+    if (async.hasError) {
+      return async.error is FailureNetwork
+          ? AsyncPhase.offline
+          : AsyncPhase.error;
+    }
     if (async.hasValue) {
       final predicate = isEmpty;
       final value = async.requireValue;
@@ -91,11 +100,6 @@ class AsyncStateHost<T> extends StatelessWidget implements AsyncStateView {
         return AsyncPhase.empty;
       }
       return AsyncPhase.content;
-    }
-    if (async.hasError) {
-      return async.error is FailureNetwork
-          ? AsyncPhase.offline
-          : AsyncPhase.error;
     }
     return AsyncPhase.loading;
   }

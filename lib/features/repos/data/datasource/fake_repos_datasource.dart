@@ -32,8 +32,8 @@ class FakeReposDataSource implements ReposDataSource {
   /// 模拟网络延时。
   final Duration delay;
 
-  /// 当前行为模式。
-  final FakeReposMode mode;
+  /// 当前行为模式（测试辅助：运行中可直接赋值切换，驱动五态恢复用例）。
+  FakeReposMode mode = FakeReposMode.normal;
 
   /// 种子数据：与 cnb.cool 真实仓库形态对齐（path/name/language/计数）。
   static final List<DtoRepos4User> _seedRepos = <DtoRepos4User>[

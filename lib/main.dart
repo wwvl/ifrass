@@ -5,7 +5,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 void main() {
-  runApp(const ProviderScope(child: CnaApp()));
+  runApp(
+    ProviderScope(
+      // AGENTS.md §5：Riverpod 3 自动重试全局关闭（默认 10 次指数退避会放大
+      // 请求量并让 error 态闪烁）。错误态由 AsyncStateHost 稳定呈现，
+      // 重试只走用户驱动的 UI 按钮；M4 网络层重试收口在 Dio interceptor 一处。
+      retry: (retryCount, error) => null,
+      child: const CnaApp(),
+    ),
+  );
 }
 
 /// 应用根组件（M2：go_router 接管导航，M0 占位首页已删）。

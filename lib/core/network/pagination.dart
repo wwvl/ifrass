@@ -1,8 +1,26 @@
-/// 分页状态与通用 Notifier 组合（AGENTS.md §5：分页状态放 core，
+/// 分页状态与通用 Notifier 基类（AGENTS.md §5：分页状态放 core，
 /// feature 不得各写一套）。
 ///
-/// 用法：状态类 `AsyncNotifier<PagedListState<T>>` + [PagedListMixin]，
-/// 子类只实现 [PagedListMixin.fetch]（对接 Repository 抽象接口）。
+/// 用法（Riverpod 3 custom base class 模式）：注解类继承
+/// [PagedListNotifier]，provider 用手写 `AsyncNotifierProvider` 实例化
+/// （生成器产物 `_$Xxx` 是 class，无法与自定义基类组合混入）——
+/// ```dart
+/// class ReposList extends PagedListNotifier<Repo> {
+///   @override
+///   Future<PagedListState<Repo>> build() {
+///     registerDisposeGuard();
+///     return loadFirstPage();
+///   }
+///
+///   @override
+///   Future<List<Repo>> fetch(int page, String? search) =>
+///       ref.read(reposRepositoryProvider)
+///           .listRepos(page: page, pageSize: pageSize, search: search);
+/// }
+///
+/// final reposListProvider =
+///     AsyncNotifierProvider<ReposList, PagedListState<Repo>>(ReposList.new);
+/// ```
 /// 首屏错误经 AsyncValue 走 `AsyncStateHost` 五态；上拉失败不清列表
 /// （footer 重试）；下拉刷新失败保留旧列表（手势回调自行呈现提示）。
 ///
@@ -14,6 +32,7 @@ library;
 
 import 'package:cna/core/error/failure.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meta/meta.dart';
 
 /// 分页列表状态（items / 搜索词 / 翻页游标语义）。
 class PagedListState<T> {
@@ -59,47 +78,34 @@ class PagedListState<T> {
   }
 }
 
-/// 通用分页组合：混入 `AsyncNotifier<PagedListState<T>>` 的实现类。
-///
-/// 子类示例：
-/// ```dart
-/// @riverpod
-/// class ReposList extends AsyncNotifier<PagedListState<Repo>>
-///     with PagedListMixin<Repo> {
-///   @override
-///   Future<PagedListState<Repo>> build() async {
-///     registerDisposeGuard();
-///     return loadFirstPage();
-///   }
-///
-///   @override
-///   Future<List<Repo>> fetch(int page, String? search) =>
-///       ref.read(reposRepositoryProvider)
-///           .listRepos(page: page, pageSize: pageSize, search: search);
-/// }
-/// ```
-mixin PagedListMixin<T> on AsyncNotifier<PagedListState<T>> {
+/// 通用分页 Notifier 基类：承载刷新 / 上拉 / 搜索与 epoch 防护，
+/// 子类只实现 [fetch]（对接 Repository 抽象接口）。
+abstract class PagedListNotifier<T> extends AsyncNotifier<PagedListState<T>> {
   /// 请求序号：每次发起自增；响应回来序号不匹配即丢弃（防竞态 / 防过期写回）。
   int _seq = 0;
 
   /// 拉取一页数据；失败抛 [Failure]（首屏 → AsyncError，上拉 → footer 重试）。
   Future<List<T>> fetch(int page, String? search);
 
-  /// 每页条数（子类可覆盖）。
+  /// 每页条数（子类可覆盖；受保护成员，不作为 Notifier 公开 API）。
+  @protected
   int get pageSize => 20;
 
   /// 子类 build() 首行调用：dispose 后使所有在途请求的响应失效。
+  @protected
   void registerDisposeGuard() {
     ref.onDispose(() => _seq = -1);
   }
 
   /// 首屏加载（build 内使用）：page 1，失败直接抛给 AsyncValue。
+  @protected
   Future<PagedListState<T>> loadFirstPage() async {
     final seq = ++_seq;
     final search = state.value?.search;
     final items = await fetch(1, search);
     if (seq != _seq) {
-      return state.value ?? PagedListState<T>();
+      // 响应过期（被取代或 provider 已失效）：丢弃，不读已失效的 state
+      return PagedListState<T>();
     }
     return PagedListState<T>(
       items: items,

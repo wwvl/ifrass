@@ -83,8 +83,11 @@ class SkeletonList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: List.generate(count, (_) => const SkeletonRepoCard()),
+    // 可滚动容器承载：骨架数量不受视口高度约束（防 RenderFlex overflowed）
+    return SingleChildScrollView(
+      child: Column(
+        children: List.generate(count, (_) => const SkeletonRepoCard()),
+      ),
     );
   }
 }

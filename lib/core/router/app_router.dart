@@ -15,6 +15,7 @@ import 'package:cna/core/router/routes.dart';
 import 'package:cna/features/auth/presentation/pages/login_page.dart';
 import 'package:cna/features/auth/presentation/pages/splash_page.dart';
 import 'package:cna/features/auth/presentation/state/auth_notifier.dart';
+import 'package:cna/features/repos/presentation/pages/repos_page.dart';
 import 'package:cna/shared/pages/not_found_page.dart';
 import 'package:cna/shared/pages/offline_page.dart';
 import 'package:cna/shared/pages/session_expired_page.dart';
@@ -61,7 +62,7 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: AppRoutes.repos,
-                builder: (_, _) => const PlaceholderPage(title: '仓库'),
+                builder: (_, _) => const ReposPage(),
               ),
             ],
           ),
