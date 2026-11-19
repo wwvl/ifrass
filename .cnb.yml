@@ -5,13 +5,14 @@
 # `git diff --exit-code -- api/spec/mvp.json lib/generated/` 必须为空；
 # 生成器版本由 tool/pubspec.lock 钉死，防工具链漂移造成「巨大 diff 只是格式变了」。
 #
-# 生成器版本号若镜像拉取失败（cirruslabs/flutter 无对应 tag），改用仓库 Dockerfile 预装 Flutter 3.47.9。
+# 镜像：仓库 Dockerfile 预装 Flutter 3.47.9（cirruslabs/flutter:3.47.9 无此 tag，已弃用）。
 
 main:
   push: &ci
     - name: flutter-ci
       docker:
-        image: cirruslabs/flutter:3.47.9
+        build:
+          dockerfile: .ci/flutter-ci.Dockerfile
       env:
         PUB_HOSTED_URL: https://pub.flutter-io.cn
         FLUTTER_STORAGE_BASE_URL: https://storage.flutter-io.cn
