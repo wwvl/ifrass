@@ -18,6 +18,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # 与 ci.yml / .cnb.yml 同源：pubspec.lock 记录的 hosted url 是 pub.flutter-io.cn，
+    # 不带此变量 --enforce-lockfile 会判定 lockfile 不匹配而失败。
+    env:
+      PUB_HOSTED_URL: https://pub.flutter-io.cn
     steps:
       - uses: actions/checkout@v7
 

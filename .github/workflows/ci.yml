@@ -5,9 +5,12 @@
 # `git diff --exit-code` 必须为空，四项检查范围缺一不可；生成器版本由 tool/pubspec.lock 钉死。
 #
 # 与 .cnb.yml 的差异：
-# - 镜像换成 subosito/flutter-action（版本在 steps 里精确钉死 3.47.9，AGENTS.md §1.0 基线）；
-#   GitHub runner 在境外，不带 PUB_HOSTED_URL / FLUTTER_STORAGE_BASE_URL，直连官方源。
+# - 镜像换成 subosito/flutter-action（版本在 steps 里精确钉死 3.47.9，AGENTS.md §1.0 基线）。
 # - 门禁不含 Android 工具链（不装 JDK），与 .ci/flutter-ci.Dockerfile 同口径。
+#
+# PUB_HOSTED_URL 必须与 .cnb.yml 一致：pubspec.lock 的 hosted url 记录的是
+# pub.flutter-io.cn（本地与 cnb 流水线都走镜像），不带这个变量 pub 会判定
+# lockfile 与 pubspec.yaml 不匹配，--enforce-lockfile 直接失败（实测 exit 65）。
 
 name: CI
 
@@ -20,6 +23,8 @@ on:
 jobs:
   gate:
     runs-on: ubuntu-latest
+    env:
+      PUB_HOSTED_URL: https://pub.flutter-io.cn
     steps:
       - uses: actions/checkout@v7
 
