@@ -1,0 +1,20 @@
+# 静态分析配置。
+# lint 基线：very_good_analysis（§1.1 质量行，二选一取更严者）。
+# riverpod_lint 按 AGENTS.md §1.2 特殊规则放顶层 plugins——
+# 禁止写进 pubspec.yaml（会钉死 riverpod 精确版本并与 analyzer 冲突），
+# 也禁止写成 analyzer.plugins（旧 custom_lint 格式）。
+# 版本取 pub.dev 最新（当前 3.2.0），不从这里之外的任何地方复制。
+include: package:very_good_analysis/analysis_options.yaml
+
+plugins:
+  riverpod_lint: ^3.2.0
+
+analyzer:
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
+    # 生成产物：机器所有，人工不读不 lint
+    - lib/generated/**
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"

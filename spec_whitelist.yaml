@@ -1,0 +1,33 @@
+# tool/spec_whitelist.yaml
+# CNB OpenAPI 一期生成白名单 —— 声明式、顺序固定、改动必须单独 PR
+#
+# 规则（对应 CODEBUDDY.md §4.2）：
+# 1. 只按 operation.tags 过滤，不按 path 过滤（按 path 会漏掉同 tag 的新接口）
+# 2. 顺序必须固定：生成器按「首个使用该共享模型的 client」决定模型归属目录，
+#    顺序一变，生成物的 import 路径会整体漂移
+# 3. 大小写不敏感匹配；filter_spec.dart 会打印实际命中的 tag 与未命中的白名单项，
+#    有未命中项即以非零码退出（防白名单写错导致静默生成空子集）
+# 4. 加 feature 时只在末尾追加，然后重跑 filter_spec.dart → generate.dart
+# 5. 禁止为了让文件变少而手写 DTO，也禁止一次放开全部 28 个 tag
+#
+# 全量口径（供对照）：约 184 path / 282 definitions，28 个 tag。
+# 本期 7 个 tag 预计裁到 ~50 path / ~70 definitions / ~120 个生成文件。
+
+tags:
+  - Users          # PAT 校验 / 当前用户信息（auth 链路）
+  - Repositories   # 仓库列表 + 详情（M3 垂直切片主路径）
+  - Issues         # 列表 / 详情 / 评论
+  - Pulls          # 列表 / 详情 / review / files
+  - Git            # 文件树 / commit / 分支
+  - Build          # 构建状态 + 日志流（只读）
+  - Activities     # 首页动态
+
+# ── 二期候选（解除注释前先确认该 tag 在 swagger.full.json 中的确切大小写）──
+#  - Search
+#  - Releases
+#  - Organizations
+#  - Members
+#  - Workspace
+#  - Registries
+#  - Missions
+#  - Starring
