@@ -1,0 +1,56 @@
+# GitHub Actions 门禁：与 .cnb.yml（cnb.cool 流水线）等价的双 CI 之一（AGENTS.md §3 / §10）。
+#
+# 门禁顺序：依赖 → spec 生成 → build_runner → 幂等/新鲜度检查 → format → analyze → test
+# 新鲜度门禁（§3）：重新执行 filter_spec.dart + generate.dart + build_runner --only-check 后，
+# `git diff --exit-code` 必须为空，四项检查范围缺一不可；生成器版本由 tool/pubspec.lock 钉死。
+#
+# 与 .cnb.yml 的差异：
+# - 镜像换成 subosito/flutter-action（版本在 steps 里精确钉死 3.47.9，AGENTS.md §1.0 基线）；
+#   GitHub runner 在境外，不带 PUB_HOSTED_URL / FLUTTER_STORAGE_BASE_URL，直连官方源。
+# - 门禁不含 Android 工具链（不装 JDK），与 .ci/flutter-ci.Dockerfile 同口径。
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Flutter 3.47.9
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.9
+          # 缓存 Flutter SDK 与 ~/.pub-cache，省去每次全量下载
+          cache: true
+
+      - name: deps
+        run: flutter pub get --enforce-lockfile
+
+      - name: toolchain-deps
+        working-directory: tool
+        run: dart pub get --enforce-lockfile
+
+      - name: freshness
+        run: |
+          dart run tool/filter_spec.dart
+          (cd tool && dart run generate.dart)
+          # M2 起 build_runner 有产物（*.g.dart / *.freezed.dart），一并纳入门禁
+          dart run build_runner build --only-check
+          git diff --exit-code -- api/spec/mvp.json lib/generated/ 'lib/**/*.g.dart' 'lib/**/*.freezed.dart'
+
+      - name: format
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: analyze
+        run: flutter analyze
+
+      - name: test
+        run: flutter test
