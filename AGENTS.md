@@ -44,21 +44,25 @@
 
 ### 1.1 依赖矩阵
 
+**M0 实测解析结果（2026-11，已写入 `pubspec.lock`，以下为本仓库唯一事实源）**：
+
+`tdesign_flutter 1.1.0` · `go_router 17.5.0`（18+ 被约束挡住 ✓）· `dio 5.11.1` · `flutter_riverpod 3.5.0` + `riverpod_annotation 4.0.8` / `riverpod_generator 4.0.10`（同主版本 ✓）· `freezed 4.0.3` · `build_runner 2.17.1` · `very_good_analysis 11.0.0` · `riverpod_lint 3.2.0`（仅 `analysis_options.yaml`）。
+
 | 层 | 选型 | 版本 / 约束 | 关键理由 |
 |---|---|---|---|
-| UI 组件 | `tdesign_flutter` | **`>=1.1.0 <1.2.0`** | 禁止 `^1.0.0`（会解析到含破坏性变更的 1.1.0）；1.x 内也曾出现 breaking，故锁到 `<1.2.0`。`pubspec.lock` 入库，升级必跑 golden 回归 |
-| 状态运行时 | `flutter_riverpod` | **3.x**（3.4.3+） | 需 Dart ≥3.12。Riverpod 3 把 `StateProvider` / `StateNotifierProvider` / `ChangeNotifierProvider` 移入 `legacy.dart`，**禁止使用**；失败 provider 默认自动重试（与 §5 的重试拦截器叠加会放大请求量，见 §5） |
-| 状态生成器 | `riverpod_annotation` + `riverpod_generator` | **4.x**，两者同主版本 | **生成器主版本 4 ≠ 运行时 3**，这是正常现象，但两者必须锁同一主版本；provider 一律接收普通 `Ref`，不存在 `UserProfileRef` 之类生成的子类 |
-| 路由 | `go_router` | **`>=17.5.0 <18.0.0`** | **刻意不升 18**，理由见 §1.0 第 4 条。17.2.1 已修复链式顶层 redirect，17.5.0 支持 route metadata。URL 自 15.0.0 起大小写敏感 |
-| 网络 | `dio` | **5.11.1+** | 5.11 新增 `DioExceptionType.transformTimeout`，exhaustive switch 需补分支；`connection closed before full header` 改判为 `connectionError`（见 §5） |
-| 领域模型 | `freezed` **4.0.2+** + `freezed_annotation` + `json_annotation` + `json_serializable` | freezed 需 Dart 3.13 | **freezed 3.x 生成代码含 `final` 参数，Dart 3.13 语言版本下会报 `extraneous_modifier`**；4.0.0 起移除。类需 `sealed` / `abstract`。禁止手改 `*.freezed.dart`，必须重跑生成器 |
-| API 客户端 | 由 `api/spec/mvp.json` 用 **`openapi_flutter_gen`** 生成 | 生成器置于 `tool/` 独立工程 | 见 §4.2。主 app 的 `pubspec.yaml` **不含任何生成器依赖** |
-| 代码生成 | `build_runner` | **2.16.1+** | **`--delete-conflicting-outputs` 已被移除**（传入会告警并被忽略）；2.16 默认修正错误的生成文件；CI 用 `--only-check` 做新鲜度门禁（见 §3） |
+| UI 组件 | `tdesign_flutter` | **`>=1.1.0 <1.2.0`**（实测 1.1.0） | 禁止 `^1.0.0`（会解析到含破坏性变更的 1.1.0）；1.x 内也曾出现 breaking，故锁到 `<1.2.0`。`pubspec.lock` 入库，升级必跑 golden 回归。**实际 API 与旧文档印象有出入，见 `DESIGN.md` §1.2** |
+| 状态运行时 | `flutter_riverpod` | **3.5.0**（3.x 线） | 需 Dart ≥3.12。Riverpod 3 把 `StateProvider` / `StateNotifierProvider` / `ChangeNotifierProvider` 移入 `legacy.dart`，**禁止使用**；失败 provider 默认自动重试（与 §5 的重试拦截器叠加会放大请求量，见 §5） |
+| 状态生成器 | `riverpod_annotation` + `riverpod_generator` | **4.0.8 / 4.0.10**，同主版本 | **生成器主版本 4 ≠ 运行时 3**，这是正常现象，但两者必须锁同一主版本；provider 一律接收普通 `Ref`，不存在 `UserProfileRef` 之类生成的子类 |
+| 路由 | `go_router` | **`>=17.5.0 <18.0.0`**（实测 17.5.0） | **刻意不升 18**，理由见 §1.0 第 4 条。17.2.1 已修复链式顶层 redirect，17.5.0 支持 route metadata。URL 自 15.0.0 起大小写敏感 |
+| 网络 | `dio` | **5.11.1** | 5.11 新增 `DioExceptionType.transformTimeout`，exhaustive switch 需补分支；`connection closed before full header` 改判为 `connectionError`（见 §5） |
+| 领域模型 | `freezed` **4.0.3** + `freezed_annotation` + `json_annotation` + `json_serializable` | freezed 需 Dart 3.13 | **freezed 3.x 生成代码含 `final` 参数，Dart 3.13 语言版本下会报 `extraneous_modifier`**；4.0.0 起移除。类需 `sealed` / `abstract`。禁止手改 `*.freezed.dart`，必须重跑生成器 |
+| API 客户端 | `cna_api`（由 `api/spec/mvp.json` 用 **`openapi_flutter_gen` 0.2.18** 生成） | 独立 package + **path 依赖** | 见 §4.1。主 app 的 `pubspec.yaml` **不含生成器依赖**，只有对生成物包的 `path:` 引用 |
+| 代码生成 | `build_runner` | **2.17.1** | **`--delete-conflicting-outputs` 已被移除**（传入会告警并被忽略）；2.16+ 默认修正错误的生成文件；CI 用 `--only-check` 做新鲜度门禁（见 §3） |
 | 安全存储 | `flutter_secure_storage` | 由 `flutter pub add` 解析 | token 唯一存放处（Keystore / Keychain） |
 | 偏好存储 | `shared_preferences` | 由 `flutter pub add` 解析 | 仅非敏感项 |
-| 本地化 | `flutter_localizations` + `intl` | 中文优先 | **3.47 起 `flutter_localizations` 已 unbundle**，delegates 迁往 `material_ui` / `cupertino_ui`；本期仍按 legacy 方式注册（见 `DESIGN.md` §9），迁移 `material_ui` 时一并改 |
-| 内容渲染 | `flutter_markdown`、`flutter_highlight` + `highlight`、`cached_network_image`、`flutter_svg` | 由 `flutter pub add` 解析 | `flutter_markdown` 仍依赖 legacy Material，`MaterialUiCompatibilityBridge` 场景下需重点回归 |
-| 质量 | `very_good_analysis` / `flutter_lints`、`riverpod_lint` **3.1.9+**、`mocktail`、`flutter_test`、`integration_test` | riverpod_lint 需 Dart 3.13 | 见 §1.2 / §10 |
+| 本地化 | `flutter_localizations` + `intl` | 中文优先 | **3.47 起 `flutter_localizations` 已 unbundle**，delegates 迁往 `material_ui` / `cupertino_ui`；本期仍按 legacy 三 delegate 注册（见 `DESIGN.md` §1.1），迁移 `material_ui` 时一并改 |
+| 内容渲染 | `flutter_markdown_plus` **1.0.12**、`flutter_highlight` + `highlight`、`cached_network_image`、`flutter_svg`、`url_launcher` | 由 `flutter pub add` 解析；**M4 才装，M2/M3 不碰** | **`flutter_markdown` 官方已 discontinued，永久禁止**。替代方案已定：`flutter_markdown_plus`（pub.dev discontinued banner 指定的官方接续、BSD-3、依赖仅 `flutter/markdown/meta/path`，**无 `material_ui`**，与本项目 legacy Material 阵营一致）。装前必须跑 `flutter pub deps \| grep material_ui` 确认仍为空；样式/链接/代码块/图片约束见 `DESIGN.md` §6.1 |
+| 质量 | `very_good_analysis 11.0.0`、`riverpod_lint 3.2.0`、`mocktail`、`flutter_test`、`integration_test` | riverpod_lint 需 Dart 3.13 | 见 §1.2 / §10 |
 
 **依赖安装纪律**：用 `flutter pub add <pkg>` 让 pub 按当前 SDK 解析兼容版本，**禁止**手工把版本号敲进 `pubspec.yaml`，也禁止 `flutter pub upgrade --major-versions` 一把梭。装完立刻把 `pubspec.lock` 提交，`flutter pub get --enforce-lockfile` 是 CI 第一步。
 
@@ -70,7 +74,7 @@
 
 ```yaml
 plugins:
-  riverpod_lint: ^3.1.9
+  riverpod_lint: ^3.2.0
 ```
 
 禁止写成 `analyzer.plugins`（旧格式）；版本从 pub.dev 取最新，不要从 `pubspec.yaml` 复制。
@@ -97,18 +101,22 @@ lib/
 ├── shared/
 │   ├── extensions/
 │   └── widgets/         # 自建业务组件（见 DESIGN.md §6）
-├── generated/           # OpenAPI 生成产物；禁止手改、禁止手删单个文件
+├── generated/
+│   └── cna_api/         # 生成物【独立 Dart package】，自带 pubspec.yaml
+│       └── lib/         #   models/ api/ core/；主 app 以 path: 依赖引用
+│                        #   禁止手改、禁止手删单个文件「瘦身」
 └── main.dart
 api/spec/
-├── swagger.full.json    # 全量 Swagger 2.0 快照，单一事实源
-└── mvp.json             # 按白名单裁剪后的一期子集（脚本产出，commit）
-tool/                    # 独立 Dart 工程，与主 app 的 SDK 约束隔离
-├── pubspec.yaml         #   仅放生成器与脚本依赖
-├── spec_whitelist.yaml  #   tag 白名单，顺序固定
-├── filter_spec.dart     #   swagger.full.json → mvp.json
-└── generate.dart        #   mvp.json → lib/generated/
+├── swagger.full.json    # 全量 Swagger 2.0 快照（M1 实测 1.16 MB / 201 paths / 325 defs）
+└── mvp.json             # 裁剪后子集（105 paths / 149 defs / 141 ops），commit
+tool/                    # 独立 Dart 工程，生成器依赖锁在 tool/pubspec.lock
+├── pubspec.yaml
+├── pubspec.lock         #   openapi_flutter_gen 0.2.18 钉死
+├── spec_whitelist.yaml  #   7 个 tag，顺序固定
+├── filter_spec.dart     #   核心纯函数 trimSpec；main 只管 IO / 退出码
+└── generate.dart        #   生成前清空产物目录，再调 CLI
 docs/prompts/            # 里程碑 prompt 归档
-test/  integration_test/
+test/  test/tool/  integration_test/
 ```
 
 ### 分层铁律
@@ -159,7 +167,16 @@ flutter run
 
 **门禁顺序**：`依赖 → spec 生成 → build_runner → 幂等/新鲜度检查 → format → analyze → test`。任何一步失败，先修再交付，不得把红灯留给用户。
 
-**新鲜度门禁**（CI，强制）：重新执行 `filter_spec.dart` + `generate.dart` + `build_runner build` 后，`git diff --exit-code -- api/spec/mvp.json lib/generated/` 必须为空。生成器版本由 `tool/pubspec.lock` 钉死，避免工具链漂移造成「巨大 diff 其实只是格式化变了」。
+**新鲜度门禁**（CI，强制）：重新执行 `filter_spec.dart` + `generate.dart` + `build_runner build` 后，`git diff --exit-code` 必须为空，**检查范围四项缺一不可**：
+
+```
+api/spec/mvp.json
+lib/generated/                    # cna_api 生成物包
+lib/**/*.g.dart                   # M2 起 build_runner 开始产出（Riverpod / json_serializable）
+lib/**/*.freezed.dart             # M2 起 Freezed 实体产出
+```
+
+M1 的 `.cnb.yml` 当时只覆盖前两项（M0/M1 无注解类，0 outputs，未暴露）；**M2 首个含 `@riverpod` 注解的 PR 必须补齐后两项**，否则生成物可静默漂移。生成器版本由 `tool/pubspec.lock` 钉死，避免工具链漂移造成「巨大 diff 其实只是格式化变了」。
 
 修改 `pubspec.yaml`、`tool/spec_whitelist.yaml`、`api/spec/*.json`、路由表或 SDK 版本后必须重跑完整链。`lib/generated/**` 在 `.gitattributes` 标记为 `linguist-generated=true`，PR 中折叠显示。
 
@@ -173,19 +190,22 @@ flutter run
 
 - 唯一契约源：`https://api.cnb.cool/swagger.json`，快照存 `api/spec/swagger.full.json`
 - **它是 Swagger 2.0（`"swagger": "2.0"`），不是 OpenAPI 3.x**。`openapi.json` 端点存在但返回 401 需登录，**禁止**当作契约源
-- 规模：约 **184 个 path / 282 个 definitions**（`cnb` Rust crate 口径为 241 个操作 / 28 个资源模块 / 271 个模型，一个 path 可挂多个 method，两者不矛盾）
-- 全量生成约 550 个文件 / 3–6 万行。**本项目不生成全量**，按 §4.2 裁剪后只生成一期子集
-- 生成产物落在 `lib/generated/`，**禁止手工编辑、禁止手工删单个文件**，禁止拆散到 features
+- **M1 实测规模**：`api/spec/swagger.full.json` = **201 paths / 325 definitions**（比早前粗估的 184/282 新，属 spec 演进，如实入库）；`cnb` Rust crate 口径为 241 个操作 / 28 个资源模块 / 271 个模型，一个 path 可挂多个 method，两者不矛盾
+- **7 tag 子集实测**：105 paths / 149 defs / 141 ops → 生成 **624 个纯 Dart 文件**。这个数字看起来大，但是正常的：生成器按「每 operation 一个 sealed result + 每 schema 一个 model + 每 tag 一个 service + core」拆分。**不要因为 624 就以为生成错了，更不要手工删文件瘦身**——删了下次生成又回来，且破坏可复现性
+- 全量（28 tag）只会更多，**本项目不生成全量**，按 §4.2 裁剪后只生成一期子集
+- 生成产物落在 `lib/generated/cna_api/`，是一个独立 package（见 §4.1），**禁止手工编辑、禁止手工删单个文件**，禁止拆散到 features
 - 生成客户端不负责业务语义。重试、错误映射、分页语义写在本仓库 `core/network/`（照抄 §5）
 - 与 `cnb-rs` 的关系：其 SDK 由 `codegen/cnb-codegen` 从**同一份** swagger 生成；**两者是同源兄弟，不是父子**。我们的 feature 划分照抄它的模块名，不照抄它的代码，也不把 Rust 仓库喂给 Agent
 
 ### 4.1 生成器选型（已收敛）
 
-**只用 `openapi_flutter_gen`**（`dev_dependencies` 放在 `tool/pubspec.yaml`，作为独立 CLI）：
+**只用 `openapi_flutter_gen` 0.2.18**（放在 `tool/pubspec.yaml` + `tool/pubspec.lock`，作为独立 CLI 工程）：
 
-- 支持 Swagger 2.0（`SwaggerNormalizer.normalize`）；产出不可变模型、sealed exhaustive responses、typed auth interceptor、分页助手、可选 `Isolate.run` 反序列化
-- **零 build_runner**：生成一次得到纯 `.dart` 源码，commit 即用；主 app 不需要任何生成器依赖
-- 置于 `tool/` 独立工程后，生成器自身的依赖（`freezed 4` / `retrofit 4` 等）与版本锁不污染主 app 的 `pubspec.yaml` / `pubspec.lock`；主 app 只吃生成好的纯 Dart 源码，未来升级生成器不会动到 app 的依赖树
+- 支持 Swagger 2.0。M1 已读包源码确认真实入口链：`loadSpec → SwaggerNormalizer.normalize → OpenApiSpecParser → CodeGenerator`；**禁止凭印象猜 CLI 参数或入口类**
+- **零 build_runner**：产出不可变模型、sealed exhaustive responses、typed auth interceptor、分页助手、可选 `Isolate.run` 反序列化，全是纯 `.dart` 源码
+- **生成物本身是一个独立 Dart package**：落在 `lib/generated/cna_api/`，自带 `pubspec.yaml`（依赖 dio + collection）。主 app 的 `pubspec.yaml` 只有一行 `cna_api: {path: lib/generated/cna_api}`，**不含任何生成器依赖**。这样生成器自身的依赖树不污染主 app，未来升级生成器不动 app 的 lockfile
+- `tool/generate.dart` 的职责：**先清空 `lib/generated/cna_api/` 再调 CLI**。生成器只写不删，tag 裁剪后旧文件（如 `assets_api.dart`）残留会污染 `git diff` 幂等判定——这条是 M1 实测补上的，不得删
+- 主 app import 一律走 `package:cna_api/...`，**禁止**用相对路径深钻 `lib/generated/`
 
 **备选**：`swagger_parser` 2.3.0（按 tag 分 client 目录、`--check` 只比对不写文件），但需 `serializer: plain` 且 Retrofit/Freezed 组合会引入 build_runner，性价比更低。`dart_openapi_generator` **明确不支持 Swagger 2.0**，禁止使用。OpenAPI Generator（Java）过滤能力最强但要引 Java 工具链，本期不引入。
 
@@ -213,17 +233,20 @@ lib/generated/                 ← commit，禁止手改
 
 **裁剪必须发生在 spec 层，不是生成后删文件**。删生成文件破坏可复现性——下次生成又回来，且无法解释「为什么少了这几个」；裁剪 spec 是声明式的，白名单进 git，谁改了、为什么改一目了然。
 
-`tool/filter_spec.dart` 的三项职责：
+`tool/filter_spec.dart` 的四项职责（第 4 条为 M1 实测新增）：
 
 1. 遍历 `paths`，只保留 `operation.tags` 命中 `tool/spec_whitelist.yaml` 的 method；无剩余 method 的 path 整条删除
 2. **递归解析 `$ref`**（Swagger 2.0 为 `#/definitions/xxx`），保留被保留操作间接引用的全部 definitions，传递闭包不得断
 3. 保留顶层 `securityDefinitions` / `host` / `basePath` / `info`；**白名单顺序固定**
+4. **把命中 operation 的 `tags` 收敛为白名单子集**。原因：spec 里存在多 tag 操作，例如 `/{repo}/-/files/{filePath}` 的 tags 是 `["Assets","Pulls","Issues"]`；只按「是否命中」保留整个 op，生成器按**首个 tag** 归组就会多出第 8 组 `AssetsApi`，直接违反「恰好 7 组」的约束。收敛后产物恰好 7 组 API
 
 第 3 点的顺序必须稳定：生成器按「首个使用该共享模型的 client」决定模型归属目录，白名单顺序一变，import 路径会整体漂移。
 
-**一期白名单固定为 7 个 tag**：`Users` / `Repositories` / `Issues` / `Pulls` / `Git` / `Build` / `Activities`（对齐 M3 垂直切片）。粗估从 184 paths 砍到 ~50、282 definitions 砍到 ~70，生成文件从 ~550 降到 ~120。
+**M1 实测结果**：7 个 tag 全命中，201→105 paths / 325→149 defs / 141 ops，`--check` 二次验证字节级幂等。核心裁剪已提为纯函数 `trimSpec`，`main` 只管 IO / 退出码，`test/tool/` 覆盖闭包传递、tags 收敛、大小写、未命中与幂等。**修改裁剪逻辑必须同步补 `test/tool/`，禁止只改脚本不补测**。
 
-**加 feature 时只改 `spec_whitelist.yaml`**，重跑生成，一个 PR。禁止为了少生成文件而手写 DTO，也禁止把全量 28 个 tag 一次放开。
+**一期白名单固定为 7 个 tag**：`Users` / `Repositories` / `Issues` / `Pulls` / `Git` / `Build` / `Activities`（对齐 M3 垂直切片）。
+
+**加 feature 时只改 `spec_whitelist.yaml`**，重跑生成，一个 PR。禁止为了少生成文件而手写 DTO，禁止手工删 `lib/generated/cna_api/` 里的文件，也禁止把全量 28 个 tag 一次放开。
 
 ### 4.3 feature 划分（对齐 cnb-rs 资源模块）
 
@@ -271,6 +294,12 @@ lib/generated/                 ← commit，禁止手改
 - 禁止用 WebView 承载授权页；必须用系统浏览器组件（Chrome Custom Tabs / ASWebAuthenticationSession）
 - 据此，**登录页与 `AuthRepository` 接口必须与「token 从哪来」解耦**：一期实现 `PatAuthRepository`，二期可换 `OAuthAuthRepository` 而不动 UI
 
+### M2 落地的三条架构决策（不得偏离）
+
+1. **`authNotifierProvider` 用同步 `Notifier<AuthState>`（`@Riverpod(keepAlive: true)`）**，初始 `AuthUnknown`；从 `SecureStorage` 异步恢复 token 走显式 `restore()`，由 `/splash` 触发，完成后翻转到 `AuthSignedIn` / `AuthSignedOut`。**禁止**用 `AsyncNotifier<AuthState>` 把 `AsyncLoading` 塞进 §7 的 `appRedirect` 纯函数——守卫必须是同步、可单测的纯函数
+2. **两个维度各自解耦**：token 来源（PAT / 二期 OAuth）靠 `AuthRepository` 抽象；token 校验方式（M2 `FakeAuthDataSource` / M4 `cna_api.UsersApi`）靠 `AuthDataSource` 抽象。M4 换真 client 时只换 datasource，UI / Notifier / router 一行不动
+3. **401 单一失效入口**：`core/network/unauthorized_handler.dart` 暴露唯一入口（清 `SecureStorage` → `authNotifier.invalidate()` → 守卫跳登录）。M2 的 Fake 401 与 M4 的 Dio `UnauthorizedInterceptor` 复用同一个入口，禁止任何页面写 `if (status == 401)`。`SecureStorage` 必须有内存 Fake 实现供 `ProviderContainer.test()` override
+
 ---
 
 ## 7. 状态管理与路由约定
@@ -279,16 +308,17 @@ lib/generated/                 ← commit，禁止手改
 
 - 用 `@riverpod` 注解生成 provider，禁止手写 `Provider((ref) => ...)` 之外的重复样板
 - 异步 UI 状态一律用 `AsyncNotifier` / `FutureProvider`，通过 `AsyncValue.when` 显式渲染 loading / error / data；**禁止**把 loading 藏在 `bool isLoading` 里
+- **例外（M2 明确）**：`authNotifierProvider` 是同步 `Notifier<AuthState>`，因为路由守卫要求同步纯函数。异步恢复走显式 `restore()`，不套 `AsyncValue`。除它以外一律按上一条办
 - 核心 provider：`authNotifierProvider`、`dioProvider`、`apiClientProvider`、`routerProvider`、`themeProvider`、`secureStorageProvider`、`prefsProvider`
 - 测试用 `ProviderContainer.test()` + override 做隔离；禁止依赖全局状态、禁止为测试引入 mock 框架 hack
 - provider 的 dispose 交给 `ref.onDispose`，长生命周期资源必须显式清理
 
 ### go_router
 
-- 顶层 `redirect` 写成**纯函数** `appRedirect(AuthState, GoRouterState)`：不 await、不做 IO、不写 provider、不读 `DateTime.now()`；返回 `null` 或目标 location
-- 用 `refreshListenable` 把 `authNotifierProvider` 桥接成 `Listenable`（`ref.listen(...)` → `ValueNotifier`），登录/登出立即重跑守卫
-- **防死循环**：显式放行 `/login` 自身；比较 `state.matchedLocation` 而不是原始 URI
-- 深链保留：跳登录时用 `?from=<encoded>` 携带原目标，登录成功后回到原页面
+- 顶层 `redirect` 写成**纯函数** `appRedirect(AuthState, GoRouterState)`：不 await、不做 IO、不写 provider、不读 `DateTime.now()`；返回 `null` 或目标 location。go_router 的回调体只允许 `appRedirect(ref.read(authNotifierProvider), state)` 这一次同步读
+- 用 `refreshListenable` 把 `authNotifierProvider` 桥接成 `Listenable`（`ref.listen(...)` → `ValueNotifier` / `ChangeNotifier`），登录/登出立即重跑守卫；`ref.read` 不负责触发重跑，触发只靠 `refreshListenable`
+- **防死循环**：显式放行 `/login` 自身；比较 `state.matchedLocation` 而不是原始 URI；反复 refresh 不得抖动（要有单测）
+- 深链保留：跳登录时用 `?from=<encoded>` 携带原目标，登录成功后回到原页面。**`from` 必须校验为站内路径**：`Uri.tryParse` 后要求非绝对、无 scheme/host、以 `/` 开头，否则回落 `/`——防开放重定向（见 §11）
 - 底部 Tab 用 `StatefulShellRoute`，各 Tab 独立导航栈
 - 路由表集中放在 `core/router/routes.dart`，禁止在 Widget 里拼字符串路径
 - 必须提供 404、离线页、会话过期页
@@ -389,7 +419,10 @@ CI 跑在 **cnb.cool 云原生流水线**上（本项目即给 CNB 写客户端�
 16. 禁止 `go_router >=18.0.0`（在 legacy Material 树下会静默丢失页面转场、iOS 侧滑与 404 的 Scaffold）
 17. 禁止引入 `material_ui` / `cupertino_ui` 与 `package:flutter/material.dart` 混用；禁止对 `lib/` 执行 `dart fix --apply --code=migrate_design_widgets`
 18. 禁止给 `build_runner build` 传 `--delete-conflicting-outputs`（2.16 起已移除，传入只会告警并被忽略）
-19. 禁止 `flutter pub upgrade --major-versions`、禁止手填依赖版本号、禁止手工删 `lib/generated/` 里的单个文件
+19. 禁止 `flutter pub upgrade --major-versions`、禁止手填依赖版本号、禁止手工删 `lib/generated/cna_api/` 里的单个文件「瘦身」
+20. **永久禁止 `flutter_markdown`**（官方 2025-05-30 标记 discontinued）。替代方案已定为 **`flutter_markdown_plus` 1.0.12**（§1.1）：禁止 Agent 自行换成 `gpt_markdown` / `markdown_widget` / `prism_markdown` / 任何 git fork。**M2、M3 一律不装、不渲染 Markdown**；M4 装前必须先跑 `flutter pub deps | grep material_ui` 且输出为空，并确认包 `pubspec.yaml` 依赖写的是 `flutter` 而非 `material_ui`（与 §15「看依赖不看 README」同一条纪律）。若该包将来迁到 `material_ui`，退回 `markdown` 7.x + 自建渲染器（见 `DESIGN.md` §6.1 保底路径），不得自行引入桥接凑合
+21. 禁止让 freshness gate 只检查 `mvp.json` + `lib/generated/`；M2 起必须同时覆盖 `lib/**/*.g.dart` 与 `lib/**/*.freezed.dart`（见 §3）
+22. 禁止用 `AsyncNotifier<AuthState>` 承载登录态、禁止在 `appRedirect` 里处理 `AsyncLoading`（见 §6 M2 决策）
 
 ---
 
@@ -419,6 +452,10 @@ CI 跑在 **cnb.cool 云原生流水线**上（本项目即给 CNB 写客户端�
 | cnb-rs | 用户自有的 Rust CLI + `cnb` SDK 仓库，**参考实现，非依赖** |
 | Token（TDesign） | `TThemeData` 中的全局颜色/字体/间距变量，与「访问令牌」不同义 |
 | 五态 | loading / empty / error / offline / dark |
+| `cna_api` | `lib/generated/cna_api/` 里的生成物独立 package，主 app 以 `path:` 依赖引用 |
+| `trimSpec` | `tool/filter_spec.dart` 里的纯裁剪函数，`test/tool/` 直接测它 |
+| `flutter_markdown_plus` | 已选定的 Markdown 渲染器（M4 才装），`flutter_markdown` 的官方接续；M2/M3 禁用 |
+| `MarkdownBody` | `lib/shared/widgets/` 里的自建组件，内部封装 `flutter_markdown_plus` + 应用内路由 + `CodeBlock`，样式唯一出口见 `DESIGN.md` §6.1 |
 | FRB | flutter_rust_bridge，二期选项 |
 
 外部权威来源（按需查证，禁止凭记忆写 API）：
