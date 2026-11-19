@@ -13,6 +13,12 @@ main:
       docker:
         build:
           dockerfile: .ci/flutter-ci.Dockerfile
+        # pub 依赖节点缓存（docs.cnb.cool/zh/build/pipeline-cache）：
+        # 仅当前构建节点有效（平台默认 3 节点），copy-on-write 并发安全；
+        # 显式 group 让 push 与 PR 两条流水线共享同一份副本。
+        # Flutter SDK 不走 volumes——docker.build 镜像本身即官方跨节点缓存方式。
+        volumes:
+          - flutter-pub:/root/.pub-cache:copy-on-write
       env:
         PUB_HOSTED_URL: https://pub.flutter-io.cn
         FLUTTER_STORAGE_BASE_URL: https://storage.flutter-io.cn
