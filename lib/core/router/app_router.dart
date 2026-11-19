@@ -15,6 +15,8 @@ import 'package:cna/core/router/routes.dart';
 import 'package:cna/features/auth/presentation/pages/login_page.dart';
 import 'package:cna/features/auth/presentation/pages/splash_page.dart';
 import 'package:cna/features/auth/presentation/state/auth_notifier.dart';
+import 'package:cna/features/home/presentation/pages/home_page.dart';
+import 'package:cna/features/repos/presentation/pages/repo_shell_page.dart';
 import 'package:cna/features/repos/presentation/pages/repos_page.dart';
 import 'package:cna/shared/pages/not_found_page.dart';
 import 'package:cna/shared/pages/offline_page.dart';
@@ -54,7 +56,7 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: AppRoutes.home,
-                builder: (_, _) => const PlaceholderPage(title: '首页'),
+                builder: (_, _) => const HomePage(),
               ),
             ],
           ),
@@ -75,6 +77,20 @@ GoRouter appRouter(Ref ref) {
             ],
           ),
         ],
+      ),
+      // 仓库详情：页面内部 Tab（TTabsBar + TabBarView，各子页状态独立保留）。
+      // 说明：go_router 断言「StatefulShellBranch 的 default location 不得
+      // 参数化」（configuration.dart:149），本页路径必带参——故子页路由化
+      // （routes.dart 的 repoCode 等 builder）留 M5 配合 query 方案扩展。
+      GoRoute(
+        path: AppRoutes.repo(owner: ':owner', name: ':name'),
+        builder: (_, state) {
+          final parameters = state.pathParameters;
+          return RepoShellPage(
+            owner: parameters['owner']!,
+            name: parameters['name']!,
+          );
+        },
       ),
     ],
     errorBuilder: (_, _) => const NotFoundPage(),

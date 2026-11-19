@@ -39,9 +39,33 @@ abstract final class AppRoutes {
   /// 会话过期页（401 复位后的信息页）。✅
   static const String sessionExpired = '/session-expired';
 
-  /// 仓库详情（Shell：code / issues / pulls / releases / build）。✅
+  /// 仓库详情（Shell：code / issues / pulls / releases / build / settings）。✅
   static String repo({required String owner, required String name}) =>
       '/repo/$owner/$name';
+
+  /// 仓库详情 · code 子页（各子页独立导航栈）。✅
+  static String repoCode({required String owner, required String name}) =>
+      '/repo/$owner/$name/code';
+
+  /// 仓库详情 · issues 子页。✅
+  static String repoIssues({required String owner, required String name}) =>
+      '/repo/$owner/$name/issues';
+
+  /// 仓库详情 · pulls 子页。✅
+  static String repoPulls({required String owner, required String name}) =>
+      '/repo/$owner/$name/pulls';
+
+  /// 仓库详情 · releases 子页。✅
+  static String repoReleases({required String owner, required String name}) =>
+      '/repo/$owner/$name/releases';
+
+  /// 仓库详情 · build 子页。✅
+  static String repoBuild({required String owner, required String name}) =>
+      '/repo/$owner/$name/build';
+
+  /// 仓库详情 · settings 子页。✅
+  static String repoSettings({required String owner, required String name}) =>
+      '/repo/$owner/$name/settings';
 
   /// Issue 详情 + 评论。✅
   static String repoIssue({

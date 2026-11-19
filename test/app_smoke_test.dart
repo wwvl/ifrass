@@ -1,4 +1,3 @@
-import 'package:cna/core/router/pages/placeholder_pages.dart';
 import 'package:cna/core/storage/in_memory_secure_storage.dart';
 import 'package:cna/core/storage/secure_storage_provider.dart';
 import 'package:cna/core/theme/tdesign_theme.dart';
@@ -6,6 +5,7 @@ import 'package:cna/core/theme/theme.dart';
 import 'package:cna/features/auth/data/datasource/fake_auth_data_source.dart';
 import 'package:cna/features/auth/presentation/pages/splash_page.dart';
 import 'package:cna/features/auth/presentation/state/auth_notifier.dart';
+import 'package:cna/features/home/presentation/pages/home_page.dart';
 import 'package:cna/main.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -54,7 +54,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 600));
     await tester.pumpAndSettle();
     expect(find.byType(SplashPage), findsNothing);
-    expect(find.byType(PlaceholderPage), findsOneWidget);
+    expect(find.byType(HomePage), findsOneWidget);
   });
 
   testWidgets('深色：主题随系统切深，扩展为深色 Token 且两套底色不同', (tester) async {
@@ -81,6 +81,6 @@ void main() {
 
     await tester.pump(const Duration(milliseconds: 600));
     await tester.pumpAndSettle();
-    expect(find.byType(PlaceholderPage), findsOneWidget);
+    expect(find.byType(HomePage), findsOneWidget);
   });
 }
