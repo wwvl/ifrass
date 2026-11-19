@@ -32,7 +32,8 @@ main:
             dart run tool/filter_spec.dart
             cd tool && dart run generate.dart && cd ..
             dart run build_runner build --only-check
-            git diff --exit-code -- api/spec/mvp.json lib/generated/
+            # M2 起 build_runner 有产物（*.g.dart / *.freezed.dart），一并纳入门禁
+            git diff --exit-code -- api/spec/mvp.json lib/generated/ 'lib/**/*.g.dart' 'lib/**/*.freezed.dart'
         - name: format
           script: dart format --output=none --set-exit-if-changed .
         - name: analyze

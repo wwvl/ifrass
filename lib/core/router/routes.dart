@@ -33,6 +33,12 @@ abstract final class AppRoutes {
   /// 设置（主题、语言、列表密度、退出登录）。✅
   static const String settings = '/settings';
 
+  /// 离线提示页（网络不可达，不伪装成空态）。✅
+  static const String offline = '/offline';
+
+  /// 会话过期页（401 复位后的信息页）。✅
+  static const String sessionExpired = '/session-expired';
+
   /// 仓库详情（Shell：code / issues / pulls / releases / build）。✅
   static String repo({required String owner, required String name}) =>
       '/repo/$owner/$name';

@@ -1,7 +1,7 @@
 # DESIGN.md
 
 > 本文件是 **cnb.cool Flutter 移动端客户端** 的视觉唯一事实源（Design System Contract）。
-> 架构、技术栈、命令、禁令见同目录 `CODEBUDDY.md`；本文件只回答「UI 应该长什么样、由什么组成」。
+> 架构、技术栈、命令、禁令见同目录 `AGENTS.md`；本文件只回答「UI 应该长什么样、由什么组成」。
 > 所有 AI 编码 Agent 在写任何一行 UI 代码之前必须读完本文件。
 > 一句话原则：**AI 负责组合设计系统，不负责发明设计系统。**
 
@@ -16,11 +16,11 @@
 - 气质关键词：克制、清晰、高信息密度、专业；**不要**「消费级 App 的大留白 + 大圆角卡片 + 渐变」
 - 平台：手机优先（Android / iOS），折叠屏与平板做自适应，不单独设计另一套 UI
 
-### 与 `CODEBUDDY.md` 的分工
+### 与 `AGENTS.md` 的分工
 
 | 文件 | 回答 |
 |---|---|
-| `CODEBUDDY.md` | 代码放哪、用哪个状态/路由/网络方案、跑什么命令 |
+| `AGENTS.md` | 代码放哪、用哪个状态/路由/网络方案、跑什么命令 |
 | `DESIGN.md` | 用什么颜色、什么组件、什么间距、每页有哪些状态 |
 
 两者缺一不可：只有架构没有 Token 会产出不一致的丑 UI；只有 Token 没有架构会把逻辑塞进 Widget。
@@ -37,7 +37,7 @@
 
 ### 1.1 设计库归属（2026 年 Flutter 解耦，必读）
 
-Flutter 3.47 起 Material / Cupertino 开始拆成独立包 `material_ui` / `cupertino_ui`，3.50 起 SDK 内版本正式 deprecated。**本项目当前基线是 Flutter 3.47.9，属于 legacy Material 阵营**，理由见 `CODEBUDDY.md` §1.0 / §15。
+Flutter 3.47 起 Material / Cupertino 开始拆成独立包 `material_ui` / `cupertino_ui`，3.50 起 SDK 内版本正式 deprecated。**本项目当前基线是 Flutter 3.47.9，属于 legacy Material 阵营**，理由见 `AGENTS.md` §1.0 / §15。
 
 **唯一入口规则**：
 
@@ -47,7 +47,25 @@ Flutter 3.47 起 Material / Cupertino 开始拆成独立包 `material_ui` / `cup
 - **本地化**：3.47 起 `flutter_localizations` 已 unbundle，delegates 迁往独立设计包。本期仍按 legacy 方式注册 `GlobalMaterialLocalizations.delegate` / `GlobalCupertinoLocalizations.delegate` / `GlobalWidgetsLocalizations.delegate`；切到 `material_ui` 时统一改为 `GlobalMaterialLocalizations.delegates`（一次改完，不得半迁移）
 - 依赖 `flutter_markdown`、`flutter_highlight`、`cached_network_image` 等仍使用 legacy Material 的包，若将来引入 `MaterialUiCompatibilityBridge`，**只在 `MaterialApp.builder` 包一层**，并为「主题继承 / 本地化 / 嵌套 Hero / 页面转场」各加一条 widget 测试
 
-**迁移到 `material_ui` 是独立 PR**，不得与页面开发、SDK 升级、主题调整合并（见 `CODEBUDDY.md` §15.4）。
+**迁移到 `material_ui` 是独立 PR**，不得与页面开发、SDK 升级、主题调整合并（见 `AGENTS.md` §15.4）。
+
+### 1.2 TDesign 1.1.0 实测 API（M0 已验证，覆盖下方所有旧表述）
+
+> **本节优先级最高**。M0 读包源码落地了 `lib/core/theme/` 四文件并通过 13 个用例；以下三条是实测结论，**禁止再按 §2.2 的旧表格或旧印象臆造 API**。
+
+| 早前规则里的表述 | 实测事实 |
+|---|---|
+| 「`TThemeBuilder` 是包裹整树的 Widget」 | ❌ **`TThemeBuilder` 不是 Widget，是 `ThemeData` 静态工厂**。实际用法是 `TThemeBuilder.light(...)` / `.dark(...)` 产出两套 `ThemeData`，直接交给 `MaterialApp.theme` / `darkTheme` |
+| 「`TThemeData` 是主题容器」 | ✅ **`TThemeData` 是 `ThemeExtension`**，挂在 `ThemeData.extensions` 上。`lib/core/theme/theme.dart` 是唯一桥接点 |
+| 「语义 Token 有 `infoColor`」 | ❌ **无 `infoColor`**，info 语义由 `brandColor` 担当，已记入 `app_colors.dart` 注释 |
+| — | `defaultData` / 内置 `defaultDark` 已用于浅深两套 Token 定义 |
+
+**由此推出的硬规则**：
+
+- 主题唯一出口是 `lib/core/theme/theme.dart`；任何页面不得自己包一层 `TThemeBuilder`（它不是 Widget，包了也无效）
+- 读 Token 以 `context.tTheme`（或 M0 实际采用的等价扩展访问）为准；浅深两套各自完整，**深色扩展必须是指向 `root.dark` 的同一实例**（M0 已有断言，不许删/放宽）
+- 状态色只有 `success` / `warning` / `error`；需要 info 时用 brand 语义，不得新增一个不存在的 `info*` Token
+- `MarkdownBody` 依赖的 `flutter_markdown` 已被官方 discontinued（见 §6），M2/M3 不装，M4 前由人决策
 
 ---
 
@@ -60,26 +78,29 @@ lib/core/theme/
 ├── tdesign_theme.dart      # TThemeData 浅/深两套 Token 定义
 ├── app_tokens.dart         # AppSpacing / AppRadius / AppDurations / AppTypography
 ├── app_colors.dart         # 业务语义色（语言色条、状态色），仅补充 TDesign 未覆盖部分
-└── theme.dart              # TThemeBuilder → Flutter ThemeData，供 MaterialApp
+└── theme.dart              # TThemeBuilder.light/dark（静态工厂）→ ThemeData，供 MaterialApp
 ```
 
 `main.dart` 只从 `lib/core/theme/theme.dart` 取主题。**feature 目录下禁止出现第二份 `ThemeData`、色板、字号表。**
 
-### 2.2 TDesign 主题机制（必须按这个用）
+### 2.2 TDesign 主题机制（按 §1.2 实测，不是旧印象）
 
 | 想改什么 | 入口 |
 |---|---|
-| 全局颜色、字体、间距 | `TThemeData` + `TThemeBuilder` |
-| 某一类组件的默认样式 | `TButtonThemeData`、`TTagThemeData` 等 `T*ThemeData` |
-| 某个页面/区域 | 子树 `Theme` + `mergeExtension`，从当前主题合并 |
+| 全局浅/深两套 `ThemeData` | `TThemeBuilder.light(...)` / `TThemeBuilder.dark(...)` 静态工厂，只在 `lib/core/theme/theme.dart` 调一次 |
+| 全局颜色、字体、间距 Token | `TThemeData`（**ThemeExtension**），挂进 `ThemeData.extensions` |
+| 某一类组件的默认样式 | 以 1.1.0 实际导出的 `T*ThemeData` 为准，不确定先读包源码，**禁止臆造** |
+| 某个页面/区域 | 子树 `Theme` + extension 合并（以当前版本实际 API 为准） |
 | 某个实例的尺寸/状态/内容 | 该组件的构造参数 |
-| 读取当前主题 | `context.tTheme` |
+| 读取当前主题 | `context.tTheme`（M0 已落地等价访问） |
+
+> ⚠️ `TThemeBuilder` **不是 Widget**，不要在页面里 `return TThemeBuilder(child: ...)`。这一条是 M0 实测纠正的第一处，写错不会编译通过但方向全错。
 
 ### 2.3 三个必须知道的坑
 
 1. **TD 内置视觉不隐式继承 Material 主题**。改 Material 的 `buttonTheme` / `textTheme` / `IconTheme` **不会**作用于 TD 组件的内置外观。要改 TD 组件就得改 TD 的 Token 或组件 Theme
-2. `TThemeData.defaultData()` 只是默认配置，**不能代替当前上下文主题**；一律用 `context.tTheme`
-3. **浅色 / 深色各准备一套完整 Token**，不得只做浅色再靠 `Brightness.dark` 猜；切换主题时 `TThemeBuilder` 必须同时重建
+2. `TThemeData.defaultData()` / 内置 default 只是默认配置，**不能代替当前上下文主题**；一律用 `context.tTheme`。M0 已用 `defaultDark` 准备深色一套
+3. **浅色 / 深色各准备一套完整 Token**，不得只做浅色再靠 `Brightness.dark` 猜；切换 `ThemeMode` 时两套 `ThemeData`（由静态工厂产出）都要就位。M0 的「深色扩展必须是指向 `root.dark` 的同一实例」断言即为此设，不许删或放宽
 
 ### 2.4 主题切换
 
@@ -101,8 +122,8 @@ lib/core/theme/
 | 背景 / 表面 | `tTheme.bg*` | 页面底、卡片表面、浮层 |
 | 文字（主 / 次 / 弱） | `tTheme.text*` | 三级文字层次，每页只用这三级 |
 | 边框 / 分割线 | `tTheme.border*` | 卡片描边、列表分隔 |
-| 状态色 | `tTheme.success/warning/error/info*` | 构建状态、PR 状态、错误提示 |
-| 语言色条 | `app_colors.dart` | 仓库语言标识，独立常量表，集中维护 |
+| 状态色 | `tTheme.success / warning / error` | 构建状态、PR 状态、错误提示。**无 `infoColor`**，info 语义由 `brandColor` 担当（§1.2 实测） |
+| 语言色条 | `app_colors.dart` | 仓库语言标识，24 种 + 兜底，独立常量表，集中维护 |
 
 **禁止**：`Color(0xFF…)`、`Colors.blue`、在 Widget 里用 `withOpacity` 临时调色（应加语义 Token）。
 **对比度**：正文 ≥ 4.5:1，大字号 ≥ 3:1（WCAG AA），深浅两套都要过。
@@ -198,7 +219,7 @@ TDesign 是通用移动组件库，**下列才是本 App 的主体界面**，必
 | `CommitTile` | commit hash（等宽）、message、作者、时间 |
 | `DiffView` | 双栏 / 统一视图、增删行高亮、行号 |
 | `CodeBlock` | 语法高亮（`flutter_highlight`）、等宽字排、横向滚动 |
-| `MarkdownBody` | Issue / PR / README 渲染（`flutter_markdown`），链接走应用内路由 |
+| `MarkdownBody` | Issue / PR / README 渲染，链接走应用内路由。**`flutter_markdown` 已被官方 discontinued，禁止安装**；M4 内容渲染前由人决策替代方案（社区 fork / 自建解析），再更新本行 |
 | `LogTerminal` | 构建日志流式终端视图、等宽、自动滚动、可暂停、可取消订阅 |
 | `PagedList` | 统一分页列表：下拉刷新 / 上拉加载 / 骨架 / 空 / 错 / 离线 |
 | `AsyncStateView` | 五态统一宿主，避免每页各写一遍 `when` |
@@ -210,7 +231,7 @@ TDesign 是通用移动组件库，**下列才是本 App 的主体界面**，必
 
 ## 7. 页面清单与视觉契约
 
-页面 IA 由 `cnb-rs` 的 28 个资源模块 / 14 个命令组映射而来（不是从 GitHub 截图抄来的）。完整路由表见 `CODEBUDDY.md` §7。
+页面 IA 由 `cnb-rs` 的 28 个资源模块 / 14 个命令组映射而来（不是从 GitHub 截图抄来的）。完整路由表见 `AGENTS.md` §7。
 
 ### 一期核心页面
 
@@ -275,7 +296,7 @@ TDesign 是通用移动组件库，**下列才是本 App 的主体界面**，必
 7. 禁止在 feature 目录定义第二套主题 / 色板 / 字号
 8. 禁止假设 TD 组件会跟随 Material 主题变化
 9. 禁止用缓存的 / 全局的 context 弹 Toast
-10. 禁止把 DTO 字段直接塞进 `Text()` 渲染（先过 mapper，见 `CODEBUDDY.md` §2）
+10. 禁止把 DTO 字段直接塞进 `Text()` 渲染（先过 mapper，见 `AGENTS.md` §2）
 11. 禁止混用 `material_ui` / `cupertino_ui` 与 `package:flutter/material.dart`；禁止执行 `dart fix --apply --code=migrate_design_widgets`（见 §1.1）
 12. 禁止半迁移本地化 delegates：要么三个 legacy delegate 齐全，要么整套换成 `GlobalMaterialLocalizations.delegates`
 
@@ -283,14 +304,14 @@ TDesign 是通用移动组件库，**下列才是本 App 的主体界面**，必
 
 ## 11. AI 生成 UI 的标准工作流
 
-**第 0 步**：读 `CODEBUDDY.md` + 本文件 + 目标目录现状。
+**第 0 步**：读 `AGENTS.md` + 本文件 + 目标目录现状。
 
 **第 1 步（用文字定规格，不用截图）**：按 §5 的七项写清页面规格，@ 上本文件与 `Repository` 接口。
 
 **第 2 步（提示词模板）**：
 
 ```
-按 DESIGN.md 与 CODEBUDDY.md 实现 /repo/:owner/:name 的 issues 子页。
+按 DESIGN.md 与 AGENTS.md 实现 /repo/:owner/:name 的 issues 子页。
 只组合白名单组件：TCell、TTag、TRefresh、AsyncStateView、PagedList、MarkdownBody。
 不新建等价组件，不改其他页面，不改主题文件。
 必须实现 loading/empty/error/offline/dark 五态。
@@ -326,7 +347,7 @@ TDesign 是通用移动组件库，**下列才是本 App 的主体界面**，必
 - [ ] 组件自带文案的本地化代理已注册
 - [ ] 深色下对比度达标（正文 4.5:1 / 大字 3:1）
 - [ ] Toast / Overlay 使用挂载中的局部 context，异步后检查 `context.mounted`
-- [ ] `flutter analyze` + `flutter test` 全绿（见 `CODEBUDDY.md` §3）
+- [ ] `flutter analyze` + `flutter test` 全绿（见 `AGENTS.md` §3）
 - [ ] 未改动 `lib/core/theme/` 之外的任何主题定义
 
 ---
