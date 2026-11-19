@@ -1,4 +1,8 @@
-# Android 多架构 APK 构建：手动触发（workflow_dispatch）或打 tag 触发。
+# Android 多架构 APK 构建：push main / 打 tag / 手动触发。
+#
+# 为什么每次 push 都构建：门禁 CI（ci.yml / .cnb.yml）只跑 analyze + test，
+# 不编译 Android 侧——Gradle 构建被破坏只能靠本工作流暴露；同时每次推送
+# 都产出可真机安装的 APK 供测试下载。
 #
 # --split-per-abi 产出三个 APK（build/app/outputs/flutter-apk/）：
 #   arm64-v8a（64位 ARM，主流真机）/ armeabi-v7a（32位 ARM）/ x86_64（模拟器）。
@@ -11,15 +15,22 @@
 name: Android APK
 
 on:
-  workflow_dispatch:
   push:
+    branches: [main]
     tags: ['v*']
+  workflow_dispatch:
+
+# 同一分支的连续 push：新构建取消在途构建，不排队
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    # 与 ci.yml / .cnb.yml 同源：pubspec.lock 记录的 hosted url 是 pub.flutter-io.cn，
-    # 不带此变量 --enforce-lockfile 会判定 lockfile 不匹配而失败。
+    # 与 ci.yml / .cnb.yml 同源：pubspec.lock 记录的 hosted url 是
+    # pub.flutter-io.cn，不带此变量 --enforce-lockfile 会判定 lockfile
+    # 不匹配而失败（实测 exit 65）。
     env:
       PUB_HOSTED_URL: https://pub.flutter-io.cn
     steps:
@@ -31,11 +42,16 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      # 缓存 ~/.gradle（wrapper / AGP / Kotlin / 依赖）；NDK 如需下载逐次进行
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@v6
+
       - name: Set up Flutter 3.47.9
         uses: subosito/flutter-action@v2
         with:
           channel: stable
           flutter-version: 3.47.9
+          # 缓存 Flutter SDK 与 ~/.pub-cache，省去每次全量下载
           cache: true
 
       - name: deps
