@@ -14,6 +14,8 @@ analyzer:
     - build/**
     - android/**
     - ios/**
+    # tool/ 是独立 Dart 工程，自己的分析规则见 tool/analysis_options.yaml
+    - tool/**
     # 生成产物：机器所有，人工不读不 lint
     - lib/generated/**
     - "**/*.g.dart"

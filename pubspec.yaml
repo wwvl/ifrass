@@ -10,6 +10,10 @@ environment:
 
 dependencies:
   cached_network_image: ^4.0.7
+  # OpenAPI 生成产物包（tool/generate.dart 产出，禁止手改，AGENTS.md §4.2）；
+  # path 依赖引用的是生成物本身，生成器 openapi_flutter_gen 只存在于 tool/ 工程
+  cna_api:
+    path: lib/generated/cna_api
   dio: ^5.11.1
   flutter:
     sdk: flutter

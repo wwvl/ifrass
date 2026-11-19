@@ -1,0 +1,35 @@
+# cnb.cool 云原生流水线（AGENTS.md §3 / §10 / §13）。
+#
+# 门禁顺序：依赖 → spec 生成 → build_runner → 幂等/新鲜度检查 → format → analyze → test
+# 新鲜度门禁（§3）：重新执行 filter_spec.dart + generate.dart 后，
+# `git diff --exit-code -- api/spec/mvp.json lib/generated/` 必须为空；
+# 生成器版本由 tool/pubspec.lock 钉死，防工具链漂移造成「巨大 diff 只是格式变了」。
+#
+# 生成器版本号若镜像拉取失败（cirruslabs/flutter 无对应 tag），改用仓库 Dockerfile 预装 Flutter 3.47.9。
+
+main:
+  push: &ci
+    - name: flutter-ci
+      docker:
+        image: cirruslabs/flutter:3.47.9
+      env:
+        PUB_HOSTED_URL: https://pub.flutter-io.cn
+        FLUTTER_STORAGE_BASE_URL: https://storage.flutter-io.cn
+      stages:
+        - name: deps
+          script: flutter pub get --enforce-lockfile
+        - name: toolchain-deps
+          script: cd tool && dart pub get --enforce-lockfile && cd ..
+        - name: freshness
+          script: |
+            dart run tool/filter_spec.dart
+            cd tool && dart run generate.dart && cd ..
+            dart run build_runner build --only-check
+            git diff --exit-code -- api/spec/mvp.json lib/generated/
+        - name: format
+          script: dart format --output=none --set-exit-if-changed .
+        - name: analyze
+          script: flutter analyze
+        - name: test
+          script: flutter test
+  pull_request: *ci

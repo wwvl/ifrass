@@ -1,0 +1,10 @@
+name: cna_tool
+description: "CNB 客户端构建工具链（spec 裁剪 + OpenAPI 生成），与主 app 依赖隔离（AGENTS.md §2）。"
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.13.7 <4.0.0'
+
+dependencies:
+  # 生成器版本由本文件约束 + tool/pubspec.lock 双重钉死（AGENTS.md §3 新鲜度门禁）。
+  openapi_flutter_gen: ^0.2.18
