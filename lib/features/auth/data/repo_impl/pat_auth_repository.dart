@@ -19,6 +19,9 @@ class PatAuthRepository implements AuthRepository {
   /// 校验数据源（M2 假实现 / M4 远程实现）。
   final AuthDataSource dataSource;
 
+  bool _invalidated = false;
+  Future<void>? _invalidationFuture;
+
   @override
   Future<Failure?> signIn(String token) async {
     try {
@@ -27,6 +30,7 @@ class PatAuthRepository implements AuthRepository {
       return failure;
     }
     await storage.writeToken(token);
+    _invalidated = false;
     return null;
   }
 
@@ -41,8 +45,23 @@ class PatAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> signOut() => storage.deleteToken();
+  Future<void> signOut() => invalidate();
 
   @override
-  Future<void> invalidate() => storage.deleteToken();
+  Future<void> invalidate() {
+    if (_invalidated) return _invalidationFuture ?? Future<void>.value();
+    return _invalidationFuture ??= _clearToken();
+  }
+
+  Future<void> _clearToken() async {
+    _invalidated = true;
+    try {
+      await storage.deleteToken();
+    } on Object {
+      _invalidated = false;
+      rethrow;
+    } finally {
+      _invalidationFuture = null;
+    }
+  }
 }

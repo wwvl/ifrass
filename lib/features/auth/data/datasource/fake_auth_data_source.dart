@@ -1,11 +1,11 @@
 import 'package:cna/core/error/failure.dart';
 import 'package:cna/features/auth/data/datasource/auth_data_source.dart';
-import 'package:cna_api/cna_api.dart';
+import 'package:cna/features/auth/domain/entities/auth_user.dart';
 
 /// 假认证数据源（M2；M4 换远程实现）。
 ///
-/// 行为：任意非空 token 校验成功（返回与真实 DTO 字段名完全对齐的
-/// [DtoUsersResult] 种子）；三种可注入行为用于驱动差异化文案与五态：
+/// 行为：任意非空 token 校验成功（返回与真实 DTO 字段对应的领域种子）；
+/// 三种可注入行为用于驱动差异化文案与五态：
 /// - [invalidToken] 命中 → 抛 [FailureUnauthorized]（401）
 /// - [networkFailToken] 命中 → 抛 [FailureNetwork]
 /// - [delay] 模拟慢响应（注入 [Duration.zero] 加速测试）
@@ -26,8 +26,8 @@ class FakeAuthDataSource implements AuthDataSource {
   /// 命中即抛网络失败的固定 token。
   final String? networkFailToken;
 
-  /// 种子用户：字段名与 `DtoUsersResult` 真实字段完全对齐（全可空语义照抄）。
-  static const DtoUsersResult _seedUser = DtoUsersResult(
+  /// 种子用户：字段与 `DtoUsersResult` 真实字段对应，并保留可空语义。
+  static const AuthUser _seedUser = AuthUser(
     id: 'user-1',
     nickname: 'cnb-dev',
     avatar: 'https://cnb.cool/avatar/cnb-dev.png',
@@ -39,7 +39,7 @@ class FakeAuthDataSource implements AuthDataSource {
   );
 
   @override
-  Future<DtoUsersResult> verify(String token) async {
+  Future<AuthUser> verify(String token) async {
     await Future<void>.delayed(delay);
     if (token == invalidToken) {
       throw const FailureUnauthorized(body: 'fake: invalid token');
