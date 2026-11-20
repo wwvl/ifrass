@@ -132,7 +132,7 @@ class IssuesApi {
       reqQueryParams['order_by'] = orderBy.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/user/issues',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -153,7 +153,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/files/issues/$filePath',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -178,7 +178,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/files/$filePath',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -199,7 +199,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/files/$filePath',
       queryParameters: null,
       options:
@@ -221,7 +221,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/imgs/issues/$imgPath',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -246,7 +246,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/imgs/$imgPath',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -267,7 +267,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/imgs/$imgPath',
       queryParameters: null,
       options:
@@ -352,7 +352,7 @@ class IssuesApi {
       reqQueryParams['order_by'] = orderBy.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/issues',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -375,7 +375,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/issues',
       data: apiPostIssueForm.toJson(),
       queryParameters: null,
@@ -397,7 +397,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/issues/asset-groups',
       data: apiPostAssetGroupForm.toJson(),
       queryParameters: null,
@@ -424,7 +424,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/issues/asset-groups/$assetGroupId/file-asset-upload-url',
       data: apiPostIssueAssetUploadURLForm.toJson(),
       queryParameters: null,
@@ -451,7 +451,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/issues/asset-groups/$assetGroupId/image-asset-upload-url',
       data: apiPostIssueAssetUploadURLForm.toJson(),
       queryParameters: null,
@@ -479,7 +479,7 @@ class IssuesApi {
       reqQueryParams['numbers'] = numbers.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/issues/batch',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -502,7 +502,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/issues/$number',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -529,7 +529,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/issues/$number',
       data: apiPatchIssueForm.toJson(),
       queryParameters: null,
@@ -562,7 +562,7 @@ class IssuesApi {
       reqQueryParams['page_size'] = pageSize.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/issues/$number/activities',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -586,7 +586,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/issues/$number/activities/latest/$id',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -607,7 +607,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/issues/$number/assignees',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -630,7 +630,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/issues/$number/assignees',
       data: apiPostIssueAssigneesForm.toJson(),
       queryParameters: null,
@@ -654,7 +654,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/issues/$number/assignees',
       data: apiDeleteIssueAssigneesForm.toJson(),
       queryParameters: null,
@@ -679,7 +679,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/issues/$number/assignees',
       data: apiPatchIssueAssigneesForm.toJson(),
       queryParameters: null,
@@ -704,7 +704,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/issues/$number/assignees/$assignee',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -731,7 +731,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/issues/$number/comment-file-asset-upload-url',
       data: apiPostIssueAssetUploadURLForm.toJson(),
       queryParameters: null,
@@ -759,7 +759,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/issues/$number/comment-image-asset-upload-url',
       data: apiPostIssueAssetUploadURLForm.toJson(),
       queryParameters: null,
@@ -796,7 +796,7 @@ class IssuesApi {
       reqQueryParams['page_size'] = pageSize.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/issues/$number/comments',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -820,7 +820,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/issues/$number/comments',
       data: apiPostIssueCommentForm.toJson(),
       queryParameters: null,
@@ -843,7 +843,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/issues/$number/comments/$commentId',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -868,7 +868,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/issues/$number/comments/$commentId',
       data: apiPatchIssueCommentForm.toJson(),
       queryParameters: null,
@@ -900,7 +900,7 @@ class IssuesApi {
       reqQueryParams['page_size'] = pageSize.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/issues/$number/labels',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -923,7 +923,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/issues/$number/labels',
       data: apiPostIssueLabelsForm.toJson(),
       queryParameters: null,
@@ -948,7 +948,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/issues/$number/labels',
       data: apiPutIssueLabelsForm.toJson(),
       queryParameters: null,
@@ -971,7 +971,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/issues/$number/labels',
       queryParameters: null,
       options:
@@ -995,7 +995,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/issues/$number/labels/$name',
       queryParameters: null,
       options:
@@ -1018,7 +1018,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/issues/$number/property',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -1044,7 +1044,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/issues/$number/property',
       data: openapiIssuePropertiesForm.toJson(),
       queryParameters: null,
@@ -1067,7 +1067,7 @@ class IssuesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/property',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -1103,7 +1103,7 @@ class IssuesApi {
       reqQueryParams['keyword'] = keyword.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/property/invisible',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),

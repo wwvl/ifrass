@@ -86,7 +86,7 @@ class RepositoriesApi {
       reqQueryParams['desc'] = desc.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/user/repos',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -106,7 +106,7 @@ class RepositoriesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/users/$username/pinned-repos',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -168,7 +168,7 @@ class RepositoriesApi {
       reqQueryParams['order_by'] = orderBy.toJson().toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/users/$username/repos',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -188,7 +188,7 @@ class RepositoriesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -214,7 +214,7 @@ class RepositoriesApi {
       reqHeaders['x-cnb-identity-ticket'] = xCnbIdentityTicket.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo',
       queryParameters: null,
       options:
@@ -241,7 +241,7 @@ class RepositoriesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo',
       data: dtoRepoPatch.toJson(),
       queryParameters: null,
@@ -276,7 +276,7 @@ class RepositoriesApi {
       reqQueryParams['page_size'] = pageSize.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/forks',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -297,7 +297,7 @@ class RepositoriesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/transfer',
       data: dtoTransferSlugReq.toJson(),
       queryParameters: null,
@@ -318,7 +318,7 @@ class RepositoriesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$slug/-/pinned-repos',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -339,7 +339,7 @@ class RepositoriesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$slug/-/pinned-repos',
       data: body,
       queryParameters: null,
@@ -402,7 +402,7 @@ class RepositoriesApi {
       reqQueryParams['search'] = search.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$slug/-/repos',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -423,7 +423,7 @@ class RepositoriesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$slug/-/repos',
       data: dtoCreateRepoReq.toJson(),
       queryParameters: null,
@@ -444,7 +444,7 @@ class RepositoriesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$slug/-/settings/archive',
       queryParameters: null,
       options: options ?? Options(method: 'post', headers: null, extra: extra),
@@ -464,7 +464,7 @@ class RepositoriesApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$slug/-/settings/unarchive',
       queryParameters: null,
       options: options ?? Options(method: 'post', headers: null, extra: extra),

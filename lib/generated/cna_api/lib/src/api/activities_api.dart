@@ -32,7 +32,7 @@ class ActivitiesApi {
       reqQueryParams['date'] = date.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/users/$username/activities',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -58,7 +58,7 @@ class ActivitiesApi {
       reqQueryParams['year'] = year.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/users/$username/calendar',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -89,7 +89,7 @@ class ActivitiesApi {
       reqQueryParams['date'] = date.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/users/$username/repo-activities/$activityType',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -115,7 +115,7 @@ class ActivitiesApi {
       reqQueryParams['top'] = top.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/top-activity-users',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),

@@ -76,7 +76,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/files/pulls/$filePath',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -101,7 +101,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/files/$filePath',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -122,7 +122,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/files/$filePath',
       queryParameters: null,
       options:
@@ -144,7 +144,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/imgs/pulls/$imgPath',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -169,7 +169,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/imgs/$imgPath',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -190,7 +190,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/imgs/$imgPath',
       queryParameters: null,
       options:
@@ -217,7 +217,7 @@ class PullsApi {
       reqQueryParams['n'] = n.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pull-in-batch',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -300,7 +300,7 @@ class PullsApi {
       reqQueryParams['order_by'] = orderBy.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -321,7 +321,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls',
       data: apiPullCreationForm.toJson(),
       queryParameters: null,
@@ -343,7 +343,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls/$number',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -366,7 +366,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls/$number',
       data: apiPatchPullRequest.toJson(),
       queryParameters: null,
@@ -388,7 +388,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls/$number/assignees',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -410,7 +410,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls/$number/assignees',
       data: apiPostPullAssigneesForm.toJson(),
       queryParameters: null,
@@ -433,7 +433,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls/$number/assignees',
       data: apiDeletePullAssigneesForm.toJson(),
       queryParameters: null,
@@ -457,7 +457,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls/$number/assignees/$assignee',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -488,7 +488,7 @@ class PullsApi {
       reqQueryParams['page_size'] = pageSize.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls/$number/comments',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -511,7 +511,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls/$number/comments',
       data: apiPullCommentCreationForm.toJson(),
       queryParameters: null,
@@ -534,7 +534,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls/$number/comments/$commentId',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -557,7 +557,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls/$number/comments/$commentId',
       data: apiPatchPullCommentForm.toJson(),
       queryParameters: null,
@@ -579,7 +579,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls/$number/commit-statuses',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -610,7 +610,7 @@ class PullsApi {
       reqQueryParams['page_size'] = pageSize.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls/$number/commits',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -631,7 +631,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls/$number/files',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -662,7 +662,7 @@ class PullsApi {
       reqQueryParams['page_size'] = pageSize.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls/$number/labels',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -684,7 +684,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls/$number/labels',
       data: apiPostPullLabelsForm.toJson(),
       queryParameters: null,
@@ -709,7 +709,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls/$number/labels',
       data: apiPutPullLabelsForm.toJson(),
       queryParameters: null,
@@ -731,7 +731,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls/$number/labels',
       queryParameters: null,
       options:
@@ -754,7 +754,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls/$number/labels/$name',
       queryParameters: null,
       options:
@@ -777,7 +777,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls/$number/merge',
       data: apiMergePullRequest.toJson(),
       queryParameters: null,
@@ -800,7 +800,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls/$number/reviewers',
       data: apiPostPullReviewersForm.toJson(),
       queryParameters: null,
@@ -823,7 +823,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls/$number/reviewers',
       data: apiDeletePullReviewersForm.toJson(),
       queryParameters: null,
@@ -856,7 +856,7 @@ class PullsApi {
       reqQueryParams['page_size'] = pageSize.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls/$number/reviews',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -878,7 +878,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls/$number/reviews',
       data: apiPullReviewCreationForm.toJson(),
       queryParameters: null,
@@ -902,7 +902,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls/$number/reviews/$reviewId',
       data: apiPatchPullReviewForm.toJson(),
       queryParameters: null,
@@ -935,7 +935,7 @@ class PullsApi {
       reqQueryParams['page_size'] = pageSize.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls/$number/reviews/$reviewId/comments',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -958,7 +958,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls/$number/reviews/$reviewId/comments/{review_comment_id}',
       data: apiPatchPullReviewCommentForm.toJson(),
       queryParameters: null,
@@ -983,7 +983,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/pulls/$number/reviews/$reviewId/replies',
       data: apiPostPullRequestReviewReplyForm.toJson(),
       queryParameters: null,
@@ -1005,7 +1005,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/upload/files',
       data: dtoUploadRequestParams.toJson(),
       queryParameters: null,
@@ -1027,7 +1027,7 @@ class PullsApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/upload/imgs',
       data: dtoUploadRequestParams.toJson(),
       queryParameters: null,

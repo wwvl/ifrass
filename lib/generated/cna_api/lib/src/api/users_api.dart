@@ -28,7 +28,7 @@ class UsersApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/user',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -48,7 +48,7 @@ class UsersApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/user',
       data: dtoUpdateUserInfoPayload.toJson(),
       queryParameters: null,
@@ -98,7 +98,7 @@ class UsersApi {
       reqQueryParams['desc'] = desc.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/user/autocomplete_source',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -117,7 +117,7 @@ class UsersApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/user/emails',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -150,7 +150,7 @@ class UsersApi {
       reqQueryParams['keyword'] = keyword.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/user/gpg-keys',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -170,7 +170,7 @@ class UsersApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/users/$username',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),

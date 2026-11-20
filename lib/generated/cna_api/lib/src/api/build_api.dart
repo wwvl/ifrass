@@ -34,7 +34,7 @@ class BuildApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/build/crontab/sync/$branch',
       queryParameters: null,
       options: options ?? Options(method: 'post', headers: null, extra: extra),
@@ -108,7 +108,7 @@ class BuildApi {
       reqQueryParams['userName'] = userName.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/build/logs',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -130,7 +130,7 @@ class BuildApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/build/logs/ai-audit/$sn/$pipelineId',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -153,7 +153,7 @@ class BuildApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/build/logs/ai-request-detail/$sn/$pipelineId/$requestId',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -176,7 +176,7 @@ class BuildApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/build/logs/ai-request/$sn/$pipelineId/$page',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -199,7 +199,7 @@ class BuildApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/build/logs/stage/$sn/$pipelineId/$stageId',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -220,7 +220,7 @@ class BuildApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/build/logs/$sn',
       queryParameters: null,
       options:
@@ -242,7 +242,7 @@ class BuildApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/build/runner/download/log/$pipelineId',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -263,7 +263,7 @@ class BuildApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/build/start',
       data: dtoStartBuildReq.toJson(),
       queryParameters: null,
@@ -285,7 +285,7 @@ class BuildApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/build/status/$sn',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -306,7 +306,7 @@ class BuildApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/build/stop/$sn',
       queryParameters: null,
       options: options ?? Options(method: 'post', headers: null, extra: extra),

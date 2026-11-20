@@ -71,7 +71,7 @@ class GitApi {
       reqQueryParams['share'] = share.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/commit-assets/download/$commitId/$filename',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -92,7 +92,7 @@ class GitApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/archive-commit-changed-files/$sha1',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -113,7 +113,7 @@ class GitApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/archive-compare-changed-files/$baseHead',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -136,7 +136,7 @@ class GitApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/archive/$refWithPath',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -158,7 +158,7 @@ class GitApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/blobs',
       data: apiPostBlobForm.toJson(),
       queryParameters: null,
@@ -180,7 +180,7 @@ class GitApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/branch-locks/$branch',
       queryParameters: null,
       options: options ?? Options(method: 'post', headers: null, extra: extra),
@@ -201,7 +201,7 @@ class GitApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/branch-locks/$branch',
       queryParameters: null,
       options:
@@ -236,7 +236,7 @@ class GitApi {
       reqQueryParams['query'] = query.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/branches',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -257,7 +257,7 @@ class GitApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/branches',
       data: openapiCreateBranchForm.toJson(),
       queryParameters: null,
@@ -279,7 +279,7 @@ class GitApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/branches/$branch',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -300,7 +300,7 @@ class GitApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/branches/$branch',
       queryParameters: null,
       options:
@@ -323,7 +323,7 @@ class GitApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/commit-annotations-in-batch',
       data: webGetCommitAnnotationsInBatchForm.toJson(),
       queryParameters: null,
@@ -345,7 +345,7 @@ class GitApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/commit-annotations/$sha',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -367,7 +367,7 @@ class GitApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/commit-annotations/$sha',
       data: openapiPutCommitAnnotationsForm.toJson(),
       queryParameters: null,
@@ -390,7 +390,7 @@ class GitApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/commit-annotations/$sha/$key',
       queryParameters: null,
       options:
@@ -412,7 +412,7 @@ class GitApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/commit-assets/$sha1',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -445,7 +445,7 @@ class GitApi {
       reqQueryParams['ttl'] = ttl.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/commit-assets/$sha1/asset-upload-confirmation/$uploadToken/$assetPath',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'post', headers: null, extra: extra),
@@ -472,7 +472,7 @@ class GitApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/commit-assets/$sha1/asset-upload-url',
       data: openapiPostCommitAssetUploadURLForm.toJson(),
       queryParameters: null,
@@ -495,7 +495,7 @@ class GitApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/commit-assets/$sha1/$assetId',
       queryParameters: null,
       options:
@@ -517,7 +517,7 @@ class GitApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/commit-statuses/$commitish',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -567,7 +567,7 @@ class GitApi {
       reqQueryParams['page_size'] = pageSize.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/commits',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -588,7 +588,7 @@ class GitApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/commits/$ref',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -609,7 +609,7 @@ class GitApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/compare/$baseHead',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -635,7 +635,7 @@ class GitApi {
       reqQueryParams['ref'] = ref.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/contents',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -662,7 +662,7 @@ class GitApi {
       reqQueryParams['ref'] = ref.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/contents/$filePath',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -682,7 +682,7 @@ class GitApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/head',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -711,7 +711,7 @@ class GitApi {
       reqQueryParams['max_in_byte'] = maxInByte.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/raw/$refWithPath',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -732,7 +732,7 @@ class GitApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/tag-annotations/$tagWithKey',
       queryParameters: null,
       options:
@@ -754,7 +754,7 @@ class GitApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/tag-annotations/$tag',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -776,7 +776,7 @@ class GitApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/tag-annotations/$tag',
       data: openapiPutTagAnnotationsForm.toJson(),
       queryParameters: null,
@@ -807,7 +807,7 @@ class GitApi {
       reqQueryParams['page_size'] = pageSize.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/tags',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -828,7 +828,7 @@ class GitApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/tags',
       data: apiPostTagFrom.toJson(),
       queryParameters: null,
@@ -850,7 +850,7 @@ class GitApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/tags/$tag',
       queryParameters: null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),
@@ -871,7 +871,7 @@ class GitApi {
     Map<String, dynamic>? extra,
     Options? options,
   }) async {
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$repo/-/git/tags/$tag',
       queryParameters: null,
       options:
@@ -900,7 +900,7 @@ class GitApi {
       reqQueryParams['name'] = name.toString();
     }
 
-    final response = await dio.request<Map<String, dynamic>>(
+    final response = await dio.request<dynamic>(
       '/$slug/-/lfs/$oid',
       queryParameters: reqQueryParams.isNotEmpty ? reqQueryParams : null,
       options: options ?? Options(method: 'get', headers: null, extra: extra),

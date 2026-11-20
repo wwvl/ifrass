@@ -10,12 +10,16 @@
 //    OpenApiSpecParser / CodeGenerator），不 import 生成器内部路径
 //  - 产物是独立 Dart 包（lib/generated/cna_api/），主 app 以 path 依赖引用；
 //    生成器本身永远不进主 app 的 pubspec.yaml
-//  - 产物为纯 Dart 源码、commit 即用；禁止手改（AGENTS.md §4.2）
+//  - 产物为纯 Dart 源码、commit 即用；禁止手改（AGENTS.md §4.2）——
+//    本脚本的生成后改写步是唯一例外（见 [relaxRequestGenerics] 注释），
+//    且必须走本链路而非手改文件，保证可复现
 //  - 幂等：无时间戳，连续两次运行 diff 为空（CI 新鲜度门禁依赖此性质）
 
 import 'dart:io';
 
 import 'package:openapi_flutter_gen/openapi_flutter_gen.dart';
+
+import 'relax_request_generics.dart';
 
 /// 产物包名：主 app import 形态为 `package:cna_api/cna_api.dart`。
 const String packageName = 'cna_api';
@@ -57,5 +61,25 @@ Future<void> main() async {
   );
   await generator.generate();
 
+  final rewritten = _relaxRequestGenericsInPlace(packageDir);
+  print('[generate] relaxed request generics in $rewritten file(s)');
+
   print('[generate] done');
+}
+
+/// 对产物包内全部 .dart 文件应用 [relaxRequestGenerics]，返回改写文件数。
+int _relaxRequestGenericsInPlace(Directory packageDir) {
+  var changed = 0;
+  for (final entity in packageDir.listSync(recursive: true)) {
+    if (entity is! File || !entity.path.endsWith('.dart')) {
+      continue;
+    }
+    final original = entity.readAsStringSync();
+    final relaxed = relaxRequestGenerics(original);
+    if (relaxed != original) {
+      entity.writeAsStringSync(relaxed);
+      changed++;
+    }
+  }
+  return changed;
 }
