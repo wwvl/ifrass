@@ -13,13 +13,69 @@ library;
 
 import 'package:dio/dio.dart';
 
+/// Dio 5 请求的生命周期：默认取消信号与显式页面取消信号统一由装配层释放。
+/// 请求结束后移除登记，重试复用同一 RequestOptions 时不会重复持有资源。
+class NetworkRequestLifetime {
+  /// 创建网络生命周期。
+  new();
+
+  static const String _disposedReason = 'network provider disposed';
+  bool _disposed = false;
+  final Map<RequestOptions, CancelToken> _activeRequests = Map.identity();
+
+  /// 绑定并登记请求，保持调用方显式传入的页面取消信号。
+  void attach(RequestOptions options) {
+    final token = (options.cancelToken ??= CancelToken())
+      ..requestOptions = options;
+    final cancelled = cancellationFor(options);
+    if (cancelled != null) throw cancelled;
+    _activeRequests[options] = token;
+  }
+
+  /// 取消错误始终使用当前请求信息，并拒绝释放后才到达拦截器的响应。
+  DioException? cancellationFor(RequestOptions options) {
+    final token = options.cancelToken;
+    if (_disposed && token != null && !token.isCancelled) {
+      token.cancel(_disposedReason);
+    }
+    final error = token?.cancelError;
+    return error?.copyWith(requestOptions: options);
+  }
+
+  /// 延迟认证回调在读取 provider 容器前检查生命周期，防止释放后读取。
+  void throwIfDisposed() {
+    if (_disposed) {
+      throw DioException.requestCancelled(
+        requestOptions: RequestOptions(),
+        reason: _disposedReason,
+      );
+    }
+  }
+
+  /// 释放已完成请求的登记；由最终响应或错误的尾部拦截器调用。
+  void complete(RequestOptions options) => _activeRequests.remove(options);
+
+  /// 取消在途请求及重试等待；同一显式信号只取消一次。
+  void dispose() {
+    _disposed = true;
+    final tokens = _activeRequests.values.toSet();
+    _activeRequests.clear();
+    for (final token in tokens) {
+      if (!token.isCancelled) token.cancel(_disposedReason);
+    }
+  }
+}
+
 /// Authorization 注入器：从 SecureStorage 读当前 PAT。
 class AuthInterceptor extends Interceptor {
   /// 创建拦截器；[readToken] 由装配层注入（`secureStorageProvider.readToken`）。
-  new({required this.readToken});
+  new({required this.readToken, this.lifetime});
 
   /// 读当前 PAT（返回 null / 空串时不注入）。
   final Future<String?> Function() readToken;
+
+  /// 可选的 Dio 5 生命周期信号；生产由 dioProvider 持有。
+  final NetworkRequestLifetime? lifetime;
 
   /// 逐请求占位的 Authorization 头名（与生成物 `BearerAuthSecurity` 的
   /// `'BearerAuth'` 不同，此处为标准头）。
@@ -30,13 +86,43 @@ class AuthInterceptor extends Interceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    options.headers['Accept'] = 'application/json';
-    if (options.headers[authorizationHeader] == null) {
-      final token = await readToken();
-      if (token != null && token.isNotEmpty) {
-        options.headers[authorizationHeader] = 'Bearer $token';
+    try {
+      lifetime?.attach(options);
+      options.headers['Accept'] = 'application/json';
+      if (options.headers[authorizationHeader] == null) {
+        final cancelToken = options.cancelToken;
+        final token = await Future.any<String?>([
+          readToken(),
+          if (cancelToken != null)
+            cancelToken.whenCancel.then<String?>((error) => throw error),
+        ]);
+        if (token != null && token.isNotEmpty) {
+          options.headers[authorizationHeader] = 'Bearer $token';
+        }
       }
+      final cancelled = lifetime?.cancellationFor(options);
+      if (cancelled != null) throw cancelled;
+      handler.next(options);
+    } on DioException catch (error) {
+      handler.reject(error, true);
     }
-    handler.next(options);
+  }
+
+  @override
+  void onResponse(
+    Response<dynamic> response,
+    ResponseInterceptorHandler handler,
+  ) {
+    final cancelled = lifetime?.cancellationFor(response.requestOptions);
+    if (cancelled != null) {
+      handler.reject(cancelled, true);
+    } else {
+      handler.next(response);
+    }
+  }
+
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    handler.next(lifetime?.cancellationFor(err.requestOptions) ?? err);
   }
 }

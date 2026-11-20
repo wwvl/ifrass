@@ -405,7 +405,7 @@ void main() {
       expect(error.error, isA<FailureNetwork>());
       expect(adapter.count, 4, reason: 'GET 网络错误耗尽 3 次重试');
       expect(invalidated, 0, reason: '非 401 不触发失效入口');
-      expect(lines, hasLength(4), reason: '每次 attempt 各记一行');
+      expect(lines, hasLength(1), reason: '重试耗尽后只记录一次最终失败');
       expect(
         lines.last,
         contains('FailureNetwork'),

@@ -53,7 +53,58 @@ final class ReposDataSourceProvider
   }
 }
 
-String _$reposDataSourceHash() => r'e2a941b550f0bffd77e8b0ac3a44626d94081649';
+String _$reposDataSourceHash() => r'5a3a17c1704968fa0465707caf3878caf3aad1a3';
+
+/// Production remote data source. The composition root overrides the fake
+/// provider with this instance; tests can continue overriding the fake slot.
+
+@ProviderFor(remoteReposDataSource)
+final remoteReposDataSourceProvider = RemoteReposDataSourceProvider._();
+
+/// Production remote data source. The composition root overrides the fake
+/// provider with this instance; tests can continue overriding the fake slot.
+
+final class RemoteReposDataSourceProvider
+    extends
+        $FunctionalProvider<ReposDataSource, ReposDataSource, ReposDataSource>
+    with $Provider<ReposDataSource> {
+  /// Production remote data source. The composition root overrides the fake
+  /// provider with this instance; tests can continue overriding the fake slot.
+  RemoteReposDataSourceProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'remoteReposDataSourceProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$remoteReposDataSourceHash();
+
+  @$internal
+  @override
+  $ProviderElement<ReposDataSource> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  ReposDataSource create(Ref ref) {
+    return remoteReposDataSource(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ReposDataSource value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ReposDataSource>(value),
+    );
+  }
+}
+
+String _$remoteReposDataSourceHash() =>
+    r'3aa0cad5064b30fbfebf719385d33d1f2eac0286';
 
 /// 仓库仓储 Provider（AGENTS.md §7 核心 provider）：Fake 数据源 + mapper 组装。
 
@@ -100,4 +151,4 @@ final class ReposRepositoryProvider
   }
 }
 
-String _$reposRepositoryHash() => r'59554f0ffe02dad54e625efbbcd2702997f00096';
+String _$reposRepositoryHash() => r'1253b569eac955841fc49ad32a74dab78085a7fc';

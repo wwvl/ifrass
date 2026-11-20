@@ -25,6 +25,7 @@ void main() {
       expect(RequestCancellationScope.currentToken, isNull);
 
       subscription.close();
+      await Future<void>.delayed(Duration.zero);
 
       expect(token!.isCancelled, isTrue);
       response.complete([1]);

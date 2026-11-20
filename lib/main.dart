@@ -1,3 +1,4 @@
+import 'package:cna/core/providers/data_source_overrides.dart';
 import 'package:cna/core/router/app_router.dart';
 import 'package:cna/core/theme/theme.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -11,6 +12,7 @@ void main() {
       // 请求量并让 error 态闪烁）。错误态由 AsyncStateHost 稳定呈现，
       // 重试只走用户驱动的 UI 按钮；M4 网络层重试收口在 Dio interceptor 一处。
       retry: (retryCount, error) => null,
+      overrides: dataSourceOverrides(),
       child: const CnaApp(),
     ),
   );

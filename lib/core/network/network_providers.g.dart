@@ -51,7 +51,7 @@ final class DioProvider extends $FunctionalProvider<Dio, Dio, Dio>
   }
 }
 
-String _$dioHash() => r'e4c934d34ca8546b54771fd7a5fb43a6557fdcf1';
+String _$dioHash() => r'9634f0d4b029ed6809fc90705cc278db0460ea6c';
 
 /// 生成客户端入口（keepAlive）：共享 [dioProvider] 的拦截器链。
 

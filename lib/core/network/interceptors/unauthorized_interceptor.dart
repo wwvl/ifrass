@@ -15,6 +15,8 @@
 /// 是 SignedOut，失效动作幂等，不做旁路开关以维持「唯一入口」。
 library;
 
+import 'dart:async';
+
 import 'package:cna/core/network/unauthorized_handler.dart';
 import 'package:cna/features/auth/domain/auth_repository.dart';
 import 'package:dio/dio.dart';
@@ -30,7 +32,7 @@ class UnauthorizedInterceptor extends Interceptor {
   final AuthRepository Function() repository;
 
   /// 失效后翻转认证状态的回调（装配层接 `authNotifier.invalidate()`）。
-  final void Function() onInvalidated;
+  final FutureOr<void> Function() onInvalidated;
 
   @override
   Future<void> onError(
@@ -38,10 +40,12 @@ class UnauthorizedInterceptor extends Interceptor {
     ErrorInterceptorHandler handler,
   ) async {
     if (err.response?.statusCode == 401) {
+      FutureOr<void> invalidation;
       await handleUnauthorized(
         repository: repository(),
-        onInvalidated: onInvalidated,
+        onInvalidated: () => invalidation = onInvalidated(),
       );
+      await invalidation;
     }
     handler.next(err);
   }

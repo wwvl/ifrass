@@ -1,13 +1,14 @@
 /// Log 拦截器（AGENTS.md §5 第 4 条，注册顺序 5/5，最外层）。
 ///
-/// 结构化单行日志：method / path（含 query）/ 状态 / 耗时 / 失败归类。
-/// **脱敏硬约束（§11）**：不打印 headers、body、token——Authorization 头
-/// 一律不落日志；日志行由单测断言不含敏感串。
+/// 结构化单行 JSON：method / path / status / duration / failureType。
+/// **脱敏硬约束（§11）**：不打印 query、headers、body、错误正文或 token。
 ///
 /// 日志槽位 `sink` 由装配层注入（`AppConfig.enableHttpLogging` 时接
 /// debugPrint，测试注入收集器）；null = 静默（release 默认）。注册在最外层，
 /// onError 记录的是经过 Retry / ErrorMapping / Unauthorized 处理后的最终形态。
 library;
+
+import 'dart:convert';
 
 import 'package:cna/core/error/failure.dart';
 import 'package:dio/dio.dart';
@@ -36,23 +37,30 @@ class LoggingInterceptor extends Interceptor {
     Response<dynamic> response,
     ResponseInterceptorHandler handler,
   ) {
-    _log(_summary(response.requestOptions, '${response.statusCode}'));
+    _log(_summary(response.requestOptions, response.statusCode));
     handler.next(response);
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     final failure = err.error;
-    final detail = failure is Failure ? failure.toString() : err.type.name;
-    _log(_summary(err.requestOptions, '${err.response?.statusCode} $detail'));
+    final failureType = failure is Failure
+        ? failure.runtimeType.toString()
+        : err.type.name;
+    _log(_summary(err.requestOptions, err.response?.statusCode, failureType));
     handler.next(err);
   }
 
-  String _summary(RequestOptions options, String outcome) {
+  String _summary(RequestOptions options, int? status, [String? failureType]) {
     final stopwatch = options.extra[_stopwatchKey] as Stopwatch?;
-    final ms = stopwatch?.elapsedMilliseconds;
-    final elapsed = ms == null ? '' : ' ${ms}ms';
-    return '${options.method} ${options.uri} $outcome$elapsed';
+    stopwatch?.stop();
+    return jsonEncode({
+      'method': options.method,
+      'path': options.uri.path,
+      'status': status,
+      'duration': stopwatch?.elapsedMilliseconds,
+      'failureType': failureType,
+    });
   }
 
   void _log(String line) {

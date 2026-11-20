@@ -1,6 +1,8 @@
 import 'package:cna/core/error/failure.dart';
 import 'package:cna/features/auth/data/datasource/auth_data_source.dart';
+import 'package:cna/features/auth/data/mappers/auth_user_mapper.dart';
 import 'package:cna/features/auth/domain/entities/auth_user.dart';
+import 'package:cna_api/cna_api.dart';
 
 /// 假认证数据源（M2；M4 换远程实现）。
 ///
@@ -27,7 +29,7 @@ class FakeAuthDataSource implements AuthDataSource {
   final String? networkFailToken;
 
   /// 种子用户：字段与 `DtoUsersResult` 真实字段对应，并保留可空语义。
-  static const AuthUser _seedUser = AuthUser(
+  static const DtoUsersResult _seedUser = DtoUsersResult(
     id: 'user-1',
     nickname: 'cnb-dev',
     avatar: 'https://cnb.cool/avatar/cnb-dev.png',
@@ -50,6 +52,6 @@ class FakeAuthDataSource implements AuthDataSource {
     if (token.trim().isEmpty) {
       throw const FailureHttp(400, body: 'token must not be empty');
     }
-    return _seedUser;
+    return authUserFromDto(_seedUser);
   }
 }

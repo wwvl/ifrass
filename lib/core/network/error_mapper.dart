@@ -63,8 +63,9 @@ Failure failureFromDioException(DioException error) {
 
 /// 生成物 sealed result 的 `Error` 分支（2xx 非 200，默认 `validateStatus`
 /// 下 4xx/5xx 走 DioException，到不了这里）→ Failure。
-Failure failureFromResponse(int? status, Object? body) =>
-    FailureHttp(status ?? 0, body: _excerpt(body));
+Failure failureFromResponse(int? status, Object? body) => status == 401
+    ? FailureUnauthorized(body: _excerpt(body))
+    : FailureHttp(status ?? 0, body: _excerpt(body));
 
 /// 响应体摘录：字符串截断；结构化数据转字符串后截断（不携带全文，§11）。
 String? _excerpt(Object? body) {

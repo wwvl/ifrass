@@ -92,6 +92,7 @@ abstract class PagedListNotifier<T> extends AsyncNotifier<PagedListState<T>> {
 
   final Set<CancelToken> _activeTokens = <CancelToken>{};
   bool _pausedWithRequests = false;
+  bool _requestWasCancelled = false;
 
   /// 拉取一页数据；失败抛 [Failure]（首屏 → AsyncError，上拉 → footer 重试）。
   Future<List<T>> fetch(int page, String? search);
@@ -110,12 +111,24 @@ abstract class PagedListNotifier<T> extends AsyncNotifier<PagedListState<T>> {
     ref.onCancel(() {
       if (_activeTokens.isEmpty) return;
       _pausedWithRequests = true;
-      _seq++;
-      _cancelActiveRequests('Paged list has no listeners');
+      // `Ref.onCancel` also fires for short-lived `provider.future` reads.
+      // Give an already-completing synchronous/fake request one event turn;
+      // a real page that stays unobserved still gets its in-flight request
+      // aborted before the next network response can arrive.
+      unawaited(
+        Future<void>.delayed(Duration.zero, () {
+          if (!_pausedWithRequests || _activeTokens.isEmpty) return;
+          _seq++;
+          _requestWasCancelled = true;
+          _cancelActiveRequests('Paged list has no listeners');
+        }),
+      );
     });
     ref.onResume(() {
       if (!_pausedWithRequests) return;
       _pausedWithRequests = false;
+      if (!_requestWasCancelled) return;
+      _requestWasCancelled = false;
       // Keep-alive AsyncNotifierProviders are paused, not disposed, when a
       // page stops listening. Rebuild on return so a canceled request is not
       // mistaken for a completed empty page.
@@ -152,20 +165,21 @@ abstract class PagedListNotifier<T> extends AsyncNotifier<PagedListState<T>> {
   @protected
   Future<PagedListState<T>> loadFirstPage() async {
     final seq = ++_seq;
-    final search = state.value?.search;
+    final previous = state.value;
+    final search = previous?.search;
     List<T> items;
     try {
       items = await _fetch(1, search);
     } on Failure catch (error, stackTrace) {
       if (seq != _seq) {
         // 响应过期（被取代或 provider 已失效）：静默丢弃，不上抛
-        return PagedListState<T>();
+        return previous ?? PagedListState<T>(search: search);
       }
       Error.throwWithStackTrace(error, stackTrace);
     }
     if (seq != _seq) {
       // 响应过期（被取代或 provider 已失效）：丢弃，不读已失效的 state
-      return PagedListState<T>();
+      return previous ?? PagedListState<T>(search: search);
     }
     return PagedListState<T>(
       items: items,
@@ -180,6 +194,8 @@ abstract class PagedListNotifier<T> extends AsyncNotifier<PagedListState<T>> {
   /// provider 已 dispose（含被 CancelToken abort）时静默丢弃，不向已卸载
   /// 的手势回调上抛。成功后重置 hasMore / loadMoreFailed。
   Future<void> refresh() async {
+    _pausedWithRequests = false;
+    _requestWasCancelled = false;
     final seq = ++_seq;
     final search = state.value?.search;
     List<T> items;
@@ -205,6 +221,8 @@ abstract class PagedListNotifier<T> extends AsyncNotifier<PagedListState<T>> {
 
   /// 上拉加载下一页：失败置 `loadMoreFailed`（footer 重试），不清列表。
   Future<void> loadMore() async {
+    _pausedWithRequests = false;
+    _requestWasCancelled = false;
     final current = state.value;
     if (current == null || !current.hasMore || current.loadingMore) {
       return;
@@ -236,6 +254,8 @@ abstract class PagedListNotifier<T> extends AsyncNotifier<PagedListState<T>> {
 
   /// 搜索：等价于带词刷新；失败进入 AsyncError（AsyncStateHost 呈现）。
   Future<void> search(String query) async {
+    _pausedWithRequests = false;
+    _requestWasCancelled = false;
     final seq = ++_seq;
     final keyword = query.trim();
     try {

@@ -1,6 +1,7 @@
 import 'package:cna/core/error/failure.dart';
 import 'package:cna/features/repos/data/datasource/repos_datasource.dart';
 import 'package:cna_api/cna_api.dart';
+import 'package:dio/dio.dart';
 
 /// Fake 行为模式：对应 UI 五态的可测试输入（DESIGN.md §8）。
 enum FakeReposMode {
@@ -89,6 +90,7 @@ class FakeReposDataSource implements ReposDataSource {
     required int page,
     required int pageSize,
     String? search,
+    CancelToken? cancelToken,
   }) async {
     await Future<void>.delayed(delay);
     switch (mode) {
@@ -108,7 +110,10 @@ class FakeReposDataSource implements ReposDataSource {
   }
 
   @override
-  Future<DtoRepos4User> getRepo({required String path}) async {
+  Future<DtoRepos4User> getRepo({
+    required String path,
+    CancelToken? cancelToken,
+  }) async {
     await Future<void>.delayed(delay);
     switch (mode) {
       case FakeReposMode.offline:
@@ -123,6 +128,9 @@ class FakeReposDataSource implements ReposDataSource {
         throw FailureHttp(404, body: 'repo not found: $path');
     }
   }
+
+  @override
+  void cancelInFlight() {}
 
   /// search 命中 path / name / description（大小写不敏感，模拟服务端过滤）。
   List<DtoRepos4User> _filterBySearch(String? search) {

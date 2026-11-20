@@ -1,4 +1,5 @@
 import 'package:cna_api/cna_api.dart';
+import 'package:dio/dio.dart';
 
 /// 仓库数据源合同（data 层：允许认识生成 DTO，DTO 到此为止不进 domain/UI）。
 ///
@@ -13,8 +14,17 @@ abstract interface class ReposDataSource {
     required int page,
     required int pageSize,
     String? search,
+    CancelToken? cancelToken,
   });
 
   /// 按 path 取仓库详情（对应生成客户端 `RepositoriesApi.getByID`）。
-  Future<DtoRepos4User> getRepo({required String path});
+  Future<DtoRepos4User> getRepo({
+    required String path,
+    CancelToken? cancelToken,
+  });
+
+  /// 取消当前数据源持有的在途请求。
+  ///
+  /// Remote 实现用此方法取消通过 Dio 发出的请求；Fake 实现为空操作。
+  void cancelInFlight();
 }

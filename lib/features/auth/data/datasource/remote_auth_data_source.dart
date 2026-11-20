@@ -45,18 +45,10 @@ class RemoteAuthDataSource implements AuthDataSource {
 
     return switch (result) {
       GetUserInfoResultHttp200(:final data) => authUserFromDto(data),
-      GetUserInfoResultError(:final response) => _throwResponseFailure(
-        response,
+      GetUserInfoResultError(:final response) => throw failureFromResponse(
+        response.statusCode,
+        response.data,
       ),
     };
-  }
-
-  Never _throwResponseFailure(Response<dynamic> response) {
-    final status = response.statusCode;
-    final body = response.data?.toString();
-    if (status == 401) {
-      throw FailureUnauthorized(body: body);
-    }
-    throw failureFromResponse(status, response.data);
   }
 }

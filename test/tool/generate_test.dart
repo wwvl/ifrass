@@ -50,8 +50,7 @@ class UsersApi {
     });
 
     test('同一输入两次改写完全一致（幂等）', () {
-      const source =
-          'final response = await $pattern \'/\$repo\',\n';
+      const source = "final response = await $pattern '/\$repo',\n";
 
       final once = gen.relaxRequestGenerics(source);
       final twice = gen.relaxRequestGenerics(once);

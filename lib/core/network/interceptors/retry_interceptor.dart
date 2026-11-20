@@ -15,6 +15,7 @@
 /// 不可用）。`extra['retry_count']` 计数防环。
 library;
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -30,7 +31,8 @@ const Set<String> kRetryableMethods = {
 
 /// 可重试 HTTP 状态（5xx 全量 + 408 请求超时 + 429 限流）。
 bool isRetryableStatus(int? status) =>
-    status != null && (status == 408 || status == 429 || status >= 500);
+    status != null &&
+    (status == 408 || status == 429 || (status >= 500 && status < 600));
 
 /// 可重试的瞬时网络异常类型（`transformTimeout` 明确不在内）。
 const Set<DioExceptionType> kRetryableNetworkTypes = {
@@ -53,9 +55,8 @@ class RetryInterceptor extends Interceptor {
     required this.backoffBase,
     this.maxRetries = 3,
     DateTime Function()? now,
-    Future<void> Function(Duration)? wait,
-  }) : _now = now ?? DateTime.now,
-       _wait = wait ?? Future<void>.delayed;
+    this.wait,
+  }) : _now = now ?? DateTime.now;
 
   /// 承载本拦截器的 Dio 实例（重放入口）。
   final Dio dio;
@@ -67,7 +68,9 @@ class RetryInterceptor extends Interceptor {
   final Duration backoffBase;
 
   final DateTime Function() _now;
-  final Future<void> Function(Duration) _wait;
+
+  /// 测试可注入等待函数；生产默认使用可随 CancelToken 取消的计时器。
+  final Future<void> Function(Duration)? wait;
 
   @override
   Future<void> onError(
@@ -86,16 +89,58 @@ class RetryInterceptor extends Interceptor {
     }
 
     options.extra[_retryCountKey] = count + 1;
-    await _wait(delay);
+    try {
+      await _waitBeforeRetry(delay, options.cancelToken);
+    } on DioException catch (cancelled) {
+      handler.next(cancelled);
+      return;
+    }
     try {
       final response = await dio.fetch<dynamic>(options);
       handler.resolve(response);
     } on DioException catch (retryError) {
-      handler.next(retryError);
+      // 重放已跑完同一条链：拒绝外层请求，避免再次触发 401 / 日志副作用。
+      handler.reject(retryError);
     } on Object catch (error) {
       // 重放阶段的非 Dio 异常（如 JSON 形状 TypeError）包回 DioException，
       // 保持「调用方只见 DioException / Failure」的合同。
       handler.next(DioException(requestOptions: options, error: error));
+    }
+  }
+
+  Future<void> _waitBeforeRetry(
+    Duration delay,
+    CancelToken? cancelToken,
+  ) async {
+    final cancelled = cancelToken?.cancelError;
+    if (cancelled != null) {
+      throw cancelled;
+    }
+    final wait = this.wait;
+    if (wait != null) {
+      await Future.any<void>([
+        wait(delay),
+        if (cancelToken != null)
+          cancelToken.whenCancel.then<void>((error) => throw error),
+      ]);
+      return;
+    }
+    final completed = Completer<void>();
+    final timer = Timer(delay, completed.complete);
+    if (cancelToken != null) {
+      unawaited(
+        cancelToken.whenCancel.then((error) {
+          timer.cancel();
+          if (!completed.isCompleted) {
+            completed.completeError(error, error.stackTrace);
+          }
+        }),
+      );
+    }
+    try {
+      await completed.future;
+    } finally {
+      timer.cancel();
     }
   }
 
@@ -104,6 +149,7 @@ class RetryInterceptor extends Interceptor {
   /// 判定顺序：method 白名单 → 可重试（状态 / 网络类型）→ 退避时长
   /// （`Retry-After` 优先，仅对可重试错误生效——401 即使带了该头也不重试）。
   Duration? _retryDelay(DioException err, int count) {
+    if (err.type == DioExceptionType.transformTimeout) return null;
     if (!kRetryableMethods.contains(err.requestOptions.method.toUpperCase())) {
       return null;
     }

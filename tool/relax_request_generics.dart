@@ -23,6 +23,6 @@
 ///
 /// 无命中时内容不变；二次应用结果一致（幂等，CI 新鲜度门禁依赖）。
 String relaxRequestGenerics(String source) => source.replaceAll(
-      'dio.request<Map<String, dynamic>>(',
-      'dio.request<dynamic>(',
-    );
+  'dio.request<Map<String, dynamic>>(',
+  'dio.request<dynamic>(',
+);

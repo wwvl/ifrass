@@ -8,8 +8,6 @@
 /// 生成物会在构造器与 `.dio` getter 里各加一遍（实测源码），传了就重复。
 library;
 
-import 'dart:async';
-
 import 'package:cna/core/config/app_config.dart';
 import 'package:cna/core/network/interceptors/auth_interceptor.dart';
 import 'package:cna/core/network/interceptors/error_mapping_interceptor.dart';
@@ -31,6 +29,11 @@ part 'network_providers.g.dart';
 /// 全局 Dio 实例（keepAlive；`ref.onDispose` 关闭底层连接池）。
 @Riverpod(keepAlive: true, name: 'dioProvider')
 Dio dio(Ref ref) {
+  // Session callbacks are late-bound through this container. Ref.read would
+  // register a dependency back into auth -> apiClient -> dio on the first 401.
+  final container = ref.container;
+  final storage = ref.watch(secureStorageProvider);
+  final lifetime = NetworkRequestLifetime();
   final dio = Dio(
     BaseOptions(
       baseUrl: AppConfig.apiBaseUrl,
@@ -42,9 +45,7 @@ Dio dio(Ref ref) {
 
   dio.interceptors.addAll([
     // 1 Auth：absent 才注入 Authorization（登录校验的逐请求头优先）。
-    AuthInterceptor(
-      readToken: () => ref.read(secureStorageProvider).readToken(),
-    ),
+    AuthInterceptor(readToken: storage.readToken, lifetime: lifetime),
     // 2 Retry：幂等 method 白名单 + 5xx/408/429/瞬时网络错误，指数退避。
     RetryInterceptor(dio: dio, backoffBase: AppConfig.retryBackoffBase),
     // 3 ErrorMapping：DioException → sealed Failure（唯一映射点）。
@@ -52,15 +53,35 @@ Dio dio(Ref ref) {
     // 4 Unauthorized：401 单一入口；延迟闭包避免装配期 Riverpod 环
     // （dio → authRepository → authDataSource → apiClient → dio）。
     UnauthorizedInterceptor(
-      repository: () => ref.read(authRepositoryProvider),
-      onInvalidated: () =>
-          unawaited(ref.read(authNotifierProvider.notifier).invalidate()),
+      repository: () {
+        lifetime.throwIfDisposed();
+        return container.read(authRepositoryProvider);
+      },
+      onInvalidated: () async {
+        if (ref.mounted) {
+          await container.read(authNotifierProvider.notifier).invalidate();
+        }
+      },
     ),
     // 5 Log：最外层记录最终形态；release 静默（§11）。
     LoggingInterceptor(sink: AppConfig.enableHttpLogging ? debugPrint : null),
+    // 尾部仅清理已完成请求，不改变前五个拦截器的相对顺序或错误语义。
+    InterceptorsWrapper(
+      onResponse: (response, handler) {
+        lifetime.complete(response.requestOptions);
+        handler.next(response);
+      },
+      onError: (error, handler) {
+        lifetime.complete(error.requestOptions);
+        handler.next(error);
+      },
+    ),
   ]);
 
-  ref.onDispose(dio.close);
+  ref.onDispose(() {
+    lifetime.dispose();
+    dio.close(force: true);
+  });
   return dio;
 }
 
