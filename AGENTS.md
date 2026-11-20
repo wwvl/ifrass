@@ -17,6 +17,10 @@
 
 一句话边界：**本项目是「类型安全的 HTTP 客户端 + 设计系统组合」，不是计算密集型应用。**
 
+> **文件命名**：本文件已由 `CODEBUDDY.md` 重命名为 **`AGENTS.md`**（2026-11，开放格式）。历史分支里若仍叫 `CODEBUDDY.md`，与本文件等价；Agent 一律读取当前存在的那一份。`DESIGN.md` 与 `docs/prompts/` 的交叉引用已同步。
+>
+> **事实优先级（M0/M1 落地后新增）**：当规则里的描述与**已合入、已过门禁的源码**冲突时，**以源码为唯一事实源**，并在同一个 PR 里回来修规则。已知两处已据此修订：`TDesign 1.1.0` 的实际 API（见 `DESIGN.md` §1.2）、生成物是独立 package（见 §4.1）。禁止 Agent 按旧印象臆造 API。
+
 ---
 
 ## 1. 技术栈与版本矩阵（锁定，不得整体升级）
@@ -58,10 +62,10 @@
 | 领域模型 | `freezed` **4.0.3** + `freezed_annotation` + `json_annotation` + `json_serializable` | freezed 需 Dart 3.13 | **freezed 3.x 生成代码含 `final` 参数，Dart 3.13 语言版本下会报 `extraneous_modifier`**；4.0.0 起移除。类需 `sealed` / `abstract`。禁止手改 `*.freezed.dart`，必须重跑生成器 |
 | API 客户端 | `cna_api`（由 `api/spec/mvp.json` 用 **`openapi_flutter_gen` 0.2.18** 生成） | 独立 package + **path 依赖** | 见 §4.1。主 app 的 `pubspec.yaml` **不含生成器依赖**，只有对生成物包的 `path:` 引用 |
 | 代码生成 | `build_runner` | **2.17.1** | **`--delete-conflicting-outputs` 已被移除**（传入会告警并被忽略）；2.16+ 默认修正错误的生成文件；CI 用 `--only-check` 做新鲜度门禁（见 §3） |
-| 安全存储 | `flutter_secure_storage` | 由 `flutter pub add` 解析 | token 唯一存放处（Keystore / Keychain） |
+| 安全存储 | `flutter_secure_storage` **11.2.0**（M2 实测） | 由 `flutter pub add` 解析 | token 唯一存放处（Keystore / Keychain）。`read / write / delete({required key})` 是命名参数；`SecureStorage` 接口已单 key 收口 |
 | 偏好存储 | `shared_preferences` | 由 `flutter pub add` 解析 | 仅非敏感项 |
 | 本地化 | `flutter_localizations` + `intl` | 中文优先 | **3.47 起 `flutter_localizations` 已 unbundle**，delegates 迁往 `material_ui` / `cupertino_ui`；本期仍按 legacy 三 delegate 注册（见 `DESIGN.md` §1.1），迁移 `material_ui` 时一并改 |
-| 内容渲染 | `flutter_markdown_plus` **1.0.12**、`flutter_highlight` + `highlight`、`cached_network_image`、`flutter_svg`、`url_launcher` | 由 `flutter pub add` 解析；**M4 才装，M2/M3 不碰** | **`flutter_markdown` 官方已 discontinued，永久禁止**。替代方案已定：`flutter_markdown_plus`（pub.dev discontinued banner 指定的官方接续、BSD-3、依赖仅 `flutter/markdown/meta/path`，**无 `material_ui`**，与本项目 legacy Material 阵营一致）。装前必须跑 `flutter pub deps \| grep material_ui` 确认仍为空；样式/链接/代码块/图片约束见 `DESIGN.md` §6.1 |
+| 内容渲染 | `flutter_markdown_plus` **1.0.12**、`flutter_highlight` + `highlight`、`cached_network_image`、`flutter_svg`、`url_launcher` | 由 `flutter pub add` 解析；**M5 才装，M2/M3/M4 不碰**（M4 验收线是 UI diff 为空） | **`flutter_markdown` 官方已 discontinued，永久禁止**。替代方案已定：`flutter_markdown_plus`（pub.dev discontinued banner 指定的官方接续、BSD-3、依赖仅 `flutter/markdown/meta/path`，**无 `material_ui`**，与本项目 legacy Material 阵营一致）。装前必须跑 `flutter pub deps \| grep material_ui` 确认仍为空；样式/链接/代码块/图片约束见 `DESIGN.md` §6.1 |
 | 质量 | `very_good_analysis 11.0.0`、`riverpod_lint 3.2.0`、`mocktail`、`flutter_test`、`integration_test` | riverpod_lint 需 Dart 3.13 | 见 §1.2 / §10 |
 
 **依赖安装纪律**：用 `flutter pub add <pkg>` 让 pub 按当前 SDK 解析兼容版本，**禁止**手工把版本号敲进 `pubspec.yaml`，也禁止 `flutter pub upgrade --major-versions` 一把梭。装完立刻把 `pubspec.lock` 提交，`flutter pub get --enforce-lockfile` 是 CI 第一步。
@@ -176,7 +180,7 @@ lib/**/*.g.dart                   # M2 起 build_runner 开始产出（Riverpod 
 lib/**/*.freezed.dart             # M2 起 Freezed 实体产出
 ```
 
-M1 的 `.cnb.yml` 当时只覆盖前两项（M0/M1 无注解类，0 outputs，未暴露）；**M2 首个含 `@riverpod` 注解的 PR 必须补齐后两项**，否则生成物可静默漂移。生成器版本由 `tool/pubspec.lock` 钉死，避免工具链漂移造成「巨大 diff 其实只是格式化变了」。
+M1 的 `.cnb.yml` 当时只覆盖前两项（M0/M1 无注解类，0 outputs，未暴露）；**M2 已补齐后两项（首个含 `@riverpod` 注解的 PR，`.cnb.yml` 过官方 schema 校验）**。M3/M4 不得退回只查两项 —— 每新增一个注解类都会产出新 `.g.dart`，漏查即可静默漂移。生成器版本由 `tool/pubspec.lock` 钉死，避免工具链漂移造成「巨大 diff 其实只是格式化变了」。
 
 修改 `pubspec.yaml`、`tool/spec_whitelist.yaml`、`api/spec/*.json`、路由表或 SDK 版本后必须重跑完整链。`lib/generated/**` 在 `.gitattributes` 标记为 `linguist-generated=true`，PR 中折叠显示。
 
@@ -254,6 +258,21 @@ lib/generated/                 ← commit，禁止手改
 
 一期 MVP 只做：`auth`、`repos`、`issues`、`pulls`、`build`（只读状态）。其余 feature 建空目录占位即可，禁止提前铺开。
 
+### 4.4 M5 分期（内容渲染 + 横向铺开，**不是一个 PR**）
+
+M4 的验收线是「UI diff 为空」，所以内容渲染与 Issue/PR/构建日志页面全部顺延到 M5。M5 是**里程碑组**，按 §12 第 12 条「禁止一次性生成多个 feature」拆成四个独立 PR，顺序固定：
+
+| 段 | 内容 | 关键 |
+|---|---|---|
+| **M5-0** | **首次装运行时依赖** + 共享渲染组件：`MarkdownBody` / `CodeBlock` / `StatusBadge` / `CommitTile` / `LogTerminal` 骨架 | 不写任何页面，不建 feature 目录；是后面三段的前置 |
+| **M5-1** | `issues` feature：Issue 列表 / 详情 / 评论流 | 第一个消费 `MarkdownBody` |
+| **M5-2** | `pulls` feature：PR 列表 / 详情 / `DiffView` | 代码块与 diff 都复用 M5-0 组件 |
+| **M5-3** | `build` feature：构建状态 + 日志流 | 流式，退出取消订阅 |
+
+**首次装依赖纪律（M5-0 独有）**：M0–M4 的 `pubspec.yaml` 只靠 `flutter pub add` 增量解析、M4 明确「不新增任何运行时依赖」；**M5-0 是本项目第一次为 UI 新增运行时依赖**，装前必须跑 `flutter pub deps | grep material_ui` 且输出为空，装后立刻提交 `pubspec.lock`。禁止手填版本号、禁止 `pub upgrade --major-versions`、禁止 Agent 自行改选 Markdown 候选（§12 第 20 条）。
+
+**7 个 tag 已含 `Issues` / `Pulls` / `Git` / `Build`**：M5 全程**不改** `tool/spec_whitelist.yaml` / `api/spec/*.json` / `lib/generated/cna_api/`，不需要重生成；门禁仍跑 `--check` 验幂等。
+
 ---
 
 ## 5. 网络层约定（语义照搬 cnb-rs）
@@ -271,9 +290,12 @@ lib/generated/                 ← commit，禁止手改
 - 分页：统一 `page` / `page_size`；分页状态放在 `core/network/pagination.dart` 的通用 Notifier，feature 不得各写一套
 - 取消：页面销毁时取消在途请求，使用 `CancelToken`
 - 附件上传/下载、构建日志流走流式响应；禁止把整段日志一次性读进 `List<int>` 再解析
-- **401 统一处理**：清空安全存储中的 token → 翻转 `AuthState` → 由路由守卫跳登录，禁止在各页面分散写 `if (401)`
+- **401 统一处理**：唯一入口是 `core/network/unauthorized_handler.dart` 的**纯函数** `handleUnauthorized({repository, onInvalidated})`（M2 实测定稿，见 §6）。清安全存储 → 回调翻转 `AuthState` → 路由守卫跳登录。**禁止**做成 provider（会形成 `handler → notifier → repository → handler` 循环），禁止任何页面或 Repository 写 `if (401)`。**401 不进入 Retry 白名单、不重试**，否则清 token 与重跑守卫会抖动
 - **dio 5.11+ 两条新增语义**：① `DioExceptionType.transformTimeout` 已加入枚举，`Failure` 映射的 exhaustive `switch` 必须补分支（归为超时类、不重试）；② `connection closed before full header was received` 从 `unknown` 改判为 `connectionError`。若 Retry 拦截器按「网络错误」笼统重试，**POST 会被重发**。必须在 Retry 里显式排除该子类，或严格只按第 2 条的白名单 method 重试
 - **Riverpod 3 默认自动重试失败的 provider**（指数退避），会与 Dio 的 Retry 拦截器叠加放大请求量。Repository 层必须只保留一处重试（优先 Dio 侧），并在 provider 侧对已知业务错误显式终止，避免 3×3 次请求
+- **`core/network/` 在 M4 才首次落地**（M1/M2/M3 全是 FakeDataSource，没有 Dio 实例）。M4 必须按上面 1→4 顺序注册拦截器，且是唯一一次建 `Dio`；禁止在 feature 内另建 Dio、禁止把 baseUrl / timeout / 分页参数散落多处
+- **Authorization 只注入一次**：先读 `lib/generated/cna_api/` 的 `core/` 确认生成物自带 auth 拦截器形态，再决定是配置它还是由 `core/network/interceptors/auth_interceptor.dart` 注入。**两层同时注入 = 头重复**；禁止臆造生成物 API
+- **测试不打真实网络**：M4 新增的 remote datasource 用 `mocktail` mock 生成 client 或 Dio `HttpClientAdapter` 打桩；真实 `https://api.cnb.cool` 只留给 `integration_test` 且需流水线 `CNB_TOKEN`
 
 ---
 
@@ -298,7 +320,16 @@ lib/generated/                 ← commit，禁止手改
 
 1. **`authNotifierProvider` 用同步 `Notifier<AuthState>`（`@Riverpod(keepAlive: true)`）**，初始 `AuthUnknown`；从 `SecureStorage` 异步恢复 token 走显式 `restore()`，由 `/splash` 触发，完成后翻转到 `AuthSignedIn` / `AuthSignedOut`。**禁止**用 `AsyncNotifier<AuthState>` 把 `AsyncLoading` 塞进 §7 的 `appRedirect` 纯函数——守卫必须是同步、可单测的纯函数
 2. **两个维度各自解耦**：token 来源（PAT / 二期 OAuth）靠 `AuthRepository` 抽象；token 校验方式（M2 `FakeAuthDataSource` / M4 `cna_api.UsersApi`）靠 `AuthDataSource` 抽象。M4 换真 client 时只换 datasource，UI / Notifier / router 一行不动
-3. **401 单一失效入口**：`core/network/unauthorized_handler.dart` 暴露唯一入口（清 `SecureStorage` → `authNotifier.invalidate()` → 守卫跳登录）。M2 的 Fake 401 与 M4 的 Dio `UnauthorizedInterceptor` 复用同一个入口，禁止任何页面写 `if (status == 401)`。`SecureStorage` 必须有内存 Fake 实现供 `ProviderContainer.test()` override
+3. **401 单一失效入口**：`core/network/unauthorized_handler.dart` 暴露**纯函数** `handleUnauthorized({repository, onInvalidated})` —— 清 `SecureStorage` → 调用注入的 `onInvalidated` 翻转 `AuthState` → 守卫跳登录。**做成函数而非 provider**，避免 `handler → notifier → repository → handler` 的 Riverpod 循环；M2 的 `FakeAuthDataSource` 401 与 M4 的 Dio `UnauthorizedInterceptor` 各自注入依赖、复用同一入口。禁止任何页面写 `if (status == 401)`。`SecureStorage` 必须有内存 Fake 实现供 `ProviderContainer.test()` override
+
+### M2 实测补正（源码优先，覆盖上方表述）
+
+- `AuthState` 是 `@immutable` 值语义的 sealed 三态，**不是 Freezed**；M4 不要顺手改成 `@freezed`
+- **`riverpod_generator 4.x` 命名陷阱**：`class AuthNotifier` 默认生成 `authProvider`（自动剥掉 `Notifier` 后缀），与 §7 的契约名冲突。已用 `@Riverpod(name: 'authNotifierProvider')` 显式钉住。**新增任何 `@riverpod` 类都必须显式写 `name:`**，生成后核对 §7 核心 provider 名，否则 M4 的 `dioProvider` / `apiClientProvider` 会静默改名
+- **`PatAuthRepository` 401 原样上抛**，不在本层处理；`FakeAuthDataSource` 种子 `DtoUsersResult` 已对齐真实 `id / nickname / avatar / ...` 字段。M4 换真 `UsersApi` 时 mapper 复用这组字段名，禁止另造
+- `flutter_secure_storage` 实测 **11.2.0**，`read / write / delete({required key})` 需命名参数；`SecureStorage` 接口单 key 收口
+- **widget 测试的 fake clock**：`pumpAndSettle` 不推进纯 `Future.delayed`。任何带模拟延时的用例用 `pump(Duration)` 显式推钟（M2 的 splash 用例已注明，M4 的 remote datasource 延时 mock 同样适用）
+- 底部导航实际是 **`StatefulShellRoute.indexedStack` 三 Tab + 实名 `TTabBar`**（M2 实测）。概念预览稿里的四 Tab 仅为示意，**不作规格**，以源码为准
 
 ---
 
@@ -307,6 +338,7 @@ lib/generated/                 ← commit，禁止手改
 ### Riverpod
 
 - 用 `@riverpod` 注解生成 provider，禁止手写 `Provider((ref) => ...)` 之外的重复样板
+- **每个 `@riverpod` 必须显式 `@Riverpod(name: '...')`**（M2 实测：生成器会自动剥掉 `Notifier` 后缀，否则契约名静默漂移）。M4 新增 `dioProvider` / `apiClientProvider` / remote datasource provider 后，逐个核对 §7 核心 provider 清单
 - 异步 UI 状态一律用 `AsyncNotifier` / `FutureProvider`，通过 `AsyncValue.when` 显式渲染 loading / error / data；**禁止**把 loading 藏在 `bool isLoading` 里
 - **例外（M2 明确）**：`authNotifierProvider` 是同步 `Notifier<AuthState>`，因为路由守卫要求同步纯函数。异步恢复走显式 `restore()`，不套 `AsyncValue`。除它以外一律按上一条办
 - 核心 provider：`authNotifierProvider`、`dioProvider`、`apiClientProvider`、`routerProvider`、`themeProvider`、`secureStorageProvider`、`prefsProvider`
@@ -420,9 +452,14 @@ CI 跑在 **cnb.cool 云原生流水线**上（本项目即给 CNB 写客户端�
 17. 禁止引入 `material_ui` / `cupertino_ui` 与 `package:flutter/material.dart` 混用；禁止对 `lib/` 执行 `dart fix --apply --code=migrate_design_widgets`
 18. 禁止给 `build_runner build` 传 `--delete-conflicting-outputs`（2.16 起已移除，传入只会告警并被忽略）
 19. 禁止 `flutter pub upgrade --major-versions`、禁止手填依赖版本号、禁止手工删 `lib/generated/cna_api/` 里的单个文件「瘦身」
-20. **永久禁止 `flutter_markdown`**（官方 2025-05-30 标记 discontinued）。替代方案已定为 **`flutter_markdown_plus` 1.0.12**（§1.1）：禁止 Agent 自行换成 `gpt_markdown` / `markdown_widget` / `prism_markdown` / 任何 git fork。**M2、M3 一律不装、不渲染 Markdown**；M4 装前必须先跑 `flutter pub deps | grep material_ui` 且输出为空，并确认包 `pubspec.yaml` 依赖写的是 `flutter` 而非 `material_ui`（与 §15「看依赖不看 README」同一条纪律）。若该包将来迁到 `material_ui`，退回 `markdown` 7.x + 自建渲染器（见 `DESIGN.md` §6.1 保底路径），不得自行引入桥接凑合
+20. **永久禁止 `flutter_markdown`**（官方 2025-05-30 标记 discontinued）。替代方案已定为 **`flutter_markdown_plus` 1.0.12**（§1.1）：禁止 Agent 自行换成 `gpt_markdown` / `markdown_widget` / `prism_markdown` / 任何 git fork。**M2 / M3 / M4 一律不装、不渲染 Markdown** —— M4 的验收线是「UI diff 必须为空」，装渲染库必然改 UI，故内容渲染顺延到 **M5** 首次落地。M5 装前必须先跑 `flutter pub deps | grep material_ui` 且输出为空，并确认包 `pubspec.yaml` 依赖写的是 `flutter` 而非 `material_ui`（与 §15「看依赖不看 README」同一条纪律）。若该包将来迁到 `material_ui`，退回 `markdown` 7.x + 自建渲染器（见 `DESIGN.md` §6.1 保底路径），不得自行引入桥接凑合
 21. 禁止让 freshness gate 只检查 `mvp.json` + `lib/generated/`；M2 起必须同时覆盖 `lib/**/*.g.dart` 与 `lib/**/*.freezed.dart`（见 §3）
 22. 禁止用 `AsyncNotifier<AuthState>` 承载登录态、禁止在 `appRedirect` 里处理 `AsyncLoading`（见 §6 M2 决策）
+23. 禁止把 `handleUnauthorized` 改成 provider、禁止在 Dio 拦截器里 `ref.read(authNotifierProvider)` 造成循环、禁止新建第二个 401 handler（见 §5 / §6）
+24. 禁止在 M4 改 `spec_whitelist.yaml` / `api/spec/*.json` / `lib/generated/cna_api/`——7 个 tag 已含 `Users` 与 `Repositories`，不需要重生成；门禁仍跑 `--check` 验幂等
+25. 禁止 M4 新增任何运行时依赖（`dio` / `flutter_secure_storage` / `cna_api` 已足够），禁止让 widget 测试打真实网络（见 §5）
+26. 禁止把 M5 做成「一次铺三个 feature」的巨型 PR；必须按 §4.4 拆成 M5-0/1/2/3 四个独立 PR，且 **M5-0 不写任何页面**。禁止在 M5 改 `spec_whitelist.yaml` / `api/spec/*.json` / `lib/generated/cna_api/`
+27. 禁止让 `MarkdownBody` 自己画代码块或图片、禁止把自带滚动的 `Markdown` 塞进已有滚动视图、禁止把「识别出链接」直接等同于执行跳转（见 `DESIGN.md` §6.1 六条契约）
 
 ---
 
@@ -454,8 +491,11 @@ CI 跑在 **cnb.cool 云原生流水线**上（本项目即给 CNB 写客户端�
 | 五态 | loading / empty / error / offline / dark |
 | `cna_api` | `lib/generated/cna_api/` 里的生成物独立 package，主 app 以 `path:` 依赖引用 |
 | `trimSpec` | `tool/filter_spec.dart` 里的纯裁剪函数，`test/tool/` 直接测它 |
-| `flutter_markdown_plus` | 已选定的 Markdown 渲染器（M4 才装），`flutter_markdown` 的官方接续；M2/M3 禁用 |
+| `handleUnauthorized` | `core/network/unauthorized_handler.dart` 的纯函数，401 唯一入口；M4 的 Dio 拦截器注入依赖复用它 |
+| `AuthDataSource` | M2 引入的第二条解耦缝：token 校验方式（Fake / `UsersApi`）；M4 与 `ReposDataSource` 一起换真 |
+| `flutter_markdown_plus` | 已选定的 Markdown 渲染器（**M5 才装**），`flutter_markdown` 的官方接续；M2/M3/M4 禁用 |
 | `MarkdownBody` | `lib/shared/widgets/` 里的自建组件，内部封装 `flutter_markdown_plus` + 应用内路由 + `CodeBlock`，样式唯一出口见 `DESIGN.md` §6.1 |
+| M5-0 / 1 / 2 / 3 | M5 的四个独立 PR：共享渲染层 / issues / pulls / build，见 §4.4 |
 | FRB | flutter_rust_bridge，二期选项 |
 
 外部权威来源（按需查证，禁止凭记忆写 API）：

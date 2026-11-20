@@ -65,7 +65,7 @@ Flutter 3.47 起 Material / Cupertino 开始拆成独立包 `material_ui` / `cup
 - 主题唯一出口是 `lib/core/theme/theme.dart`；任何页面不得自己包一层 `TThemeBuilder`（它不是 Widget，包了也无效）
 - 读 Token 以 `context.tTheme`（或 M0 实际采用的等价扩展访问）为准；浅深两套各自完整，**深色扩展必须是指向 `root.dark` 的同一实例**（M0 已有断言，不许删/放宽）
 - 状态色只有 `success` / `warning` / `error`；需要 info 时用 brand 语义，不得新增一个不存在的 `info*` Token
-- `MarkdownBody` 依赖的 `flutter_markdown` 已被官方 discontinued（见 §6），M2/M3 不装，M4 前由人决策
+- `flutter_markdown` 已被官方 discontinued（见 §6）；替代方案已定为 `flutter_markdown_plus` 1.0.12，**M2/M3/M4 不装，M5 首次接入**
 
 ---
 
@@ -219,7 +219,7 @@ TDesign 是通用移动组件库，**下列才是本 App 的主体界面**，必
 | `CommitTile` | commit hash（等宽）、message、作者、时间 |
 | `DiffView` | 双栏 / 统一视图、增删行高亮、行号 |
 | `CodeBlock` | 语法高亮（`flutter_highlight`）、等宽字排、横向滚动 |
-| `MarkdownBody` | Issue / PR / README 渲染，链接走应用内路由。底层用 **`flutter_markdown_plus` 1.0.12**（`flutter_markdown` 已 discontinued，永久禁止）。**M2/M3 不装、不渲染 Markdown**；M4 首次接入，全部约束见 §6.1 |
+| `MarkdownBody` | Issue / PR / README 渲染，链接走应用内路由。底层用 **`flutter_markdown_plus` 1.0.12**（`flutter_markdown` 已 discontinued，永久禁止）。**M2/M3/M4 不装、不渲染 Markdown**；**M5** 首次接入，全部约束见 §6.1 |
 | `LogTerminal` | 构建日志流式终端视图、等宽、自动滚动、可暂停、可取消订阅 |
 | `PagedList` | 统一分页列表：下拉刷新 / 上拉加载 / 骨架 / 空 / 错 / 离线 |
 | `AsyncStateView` | 五态统一宿主，避免每页各写一遍 `when` |
@@ -227,28 +227,34 @@ TDesign 是通用移动组件库，**下列才是本 App 的主体界面**，必
 
 **约束**：这些组件内部消费 Token，外部只暴露业务参数；禁止它们各自定义颜色/间距；每个都要有浅/深 golden test。
 
-### 6.1 Markdown 集成契约（方案已定，M4 首次落地）
+### 6.1 Markdown 集成契约（方案已定，**M5** 首次落地）
 
 > 决策依据：`flutter_markdown` 于 2025-05-30 被 Google 正式标记 discontinued，pub.dev 的 banner 明确指向 **`flutter_markdown_plus` 1.0.12**（Foresight Mobile 接续维护、BSD-3、API 与旧包同名同签名）。其依赖仅 `flutter / markdown / meta / path`，**不含 `material_ui`**，与本项目 Flutter 3.47.9 的 legacy Material 阵营一致 —— 这是压倒其他候选的决定性筛选条件。
 
 **为什么不选其他候选**：`gpt_markdown` 面向 AI 流式输出、自带手写 parser 与 LaTeX/动画，样式难收敛到 TDesign Token；`markdown_widget` 2.3.2+8 最后更新 2025-04、维护状态 Average，且多带 `scroll_to_index` / `visibility_detector` 等依赖；`prism_markdown` 仍是 0.x 且 publisher 未验证；个人 git fork 破坏 `pubspec.lock` 可复现性。**Agent 不得改选**。
 
+**首次接入落在 M5-0（共享渲染层 PR）**，不是页面 PR：M5-0 只装依赖 + 建 `MarkdownBody` / `CodeBlock` / `StatusBadge` / `CommitTile` / `LogTerminal` 骨架并过浅深 golden，**不写任何页面**；M5-1（Issue 详情）才第一次消费它。按 `AGENTS.md` §4.4 拆 PR，禁止一次铺三个 feature。
+
 **六条硬约束**（写 `lib/shared/widgets/markdown_body.dart` 时逐条对）：
 
 1. **样式唯一出口**：`MarkdownStyleSheet.fromTheme(Theme.of(context))` 后只覆盖 `h1..h6 / p / code / blockquote / table*` 到 `Theme.of(context).textTheme.*` 与 `context.tTheme` 语义色。**禁止裸 hex、禁止 `TextStyle(fontSize: ...)`、禁止 `Colors.*`**。浅深各构造一份，两套都要过 golden
 2. **代码块交给 `CodeBlock`**：用 `builders: {'pre': ...}` 或 `syntaxHighlighter` 把 fenced code 转到已有的 `CodeBlock`（`flutter_highlight` + 等宽字排 + 横向滚动），**不得让 markdown 包自己画一个样式不同的代码框**
-3. **图片交给 `cached_network_image`**：用 `imageBuilder`，必须有加载中与失败占位；相对路径按仓库上下文补全（M4 定规则），禁止直接把任意 URL 丢给网络
+3. **图片交给 `cached_network_image`**：用 `imageBuilder`，必须有加载中与失败占位；相对路径按仓库上下文补全（M5 定规则），禁止直接把任意 URL 丢给网络
 4. **链接走应用内路由**：`onTapLink` 里先做站内判定 —— 复用 M2 的 `from` 校验（`Uri.tryParse` → 非绝对、无 scheme/host、以 `/` 开头 → 走 `core/router` 常量），`#123` / `@user` 映射到 Issue / 用户页；**外链只允许 `https` 且经 `url_launcher`**，其余一律不响应。禁止把「识别出链接」直接等同于「执行跳转」，防开放重定向
 5. **只嵌在已有滚动视图里**：Issue / PR 详情页自带滚动，用 `MarkdownBody` / `noScroll` 模式，**禁止**再放一个自带滚动的 `Markdown`（两个 scrollable 会打架、报 viewport 错误）
 6. **安全**：`flutter_markdown_plus` 明确不支持 inline HTML —— 这是好事，不要绕过它去引入任何 HTML 渲染；长文档不要在 `build()` 里重复解析，先解析一次再交给 Widget
 
-**保底路径**：若 `flutter_markdown_plus` 将来迁到 `material_ui`（用 `flutter pub deps | grep material_ui` 检测），**不要**引入 `MaterialUiCompatibilityBridge` 凑合，改用 **`markdown` 7.x**（Dart 团队维护、纯 Dart 零 Flutter 依赖、GFM extension sets 齐全）解析成 AST，在 `lib/shared/widgets/` 自建渲染器。这条路样式 100% 可控、完全避开设计库迁移，代价是要自己写 block/inline 渲染 + 接 `CodeBlock` + 链接路由 + 图片，M4 排期需加约 1 人日。
+**保底路径**：若 `flutter_markdown_plus` 将来迁到 `material_ui`（用 `flutter pub deps | grep material_ui` 检测），**不要**引入 `MaterialUiCompatibilityBridge` 凑合，改用 **`markdown` 7.x**（Dart 团队维护、纯 Dart 零 Flutter 依赖、GFM extension sets 齐全）解析成 AST，在 `lib/shared/widgets/` 自建渲染器。这条路样式 100% 可控、完全避开设计库迁移，代价是要自己写 block/inline 渲染 + 接 `CodeBlock` + 链接路由 + 图片，M5 排期需加约 1 人日。
+
+> **排期修正（M2 复盘）**：M4 的验收线是「换真数据时 UI diff 必须为空」，装渲染库必然触碰 `lib/shared/widgets/`，与验收线冲突。故内容渲染整体顺延到 **M5**（横向铺 Issue / PR 详情页时），M4 只换 datasource + mapper，不碰 UI。
 
 ---
 
 ## 7. 页面清单与视觉契约
 
 页面 IA 由 `cnb-rs` 的 28 个资源模块 / 14 个命令组映射而来（不是从 GitHub 截图抄来的）。完整路由表见 `AGENTS.md` §7。
+
+> **底部导航以源码为准**：M2 实测为 `StatefulShellRoute.indexedStack` **三 Tab + 实名 `TTabBar`**。此前生成的概念预览稿画了四个 Tab（首页 / 仓库 / 动态 / 我的），**仅为氛围示意，不构成规格**；不要按那张图改路由或补第四个 Tab。
 
 ### 一期核心页面
 
