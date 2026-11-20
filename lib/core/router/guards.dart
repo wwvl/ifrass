@@ -43,7 +43,7 @@ String? appRedirect(AuthState auth, GoRouterState state) {
 
     case AuthSignedIn():
       if (location == AppRoutes.login) {
-        final target = _safeFromTarget(state.uri.queryParameters['from']);
+        final target = safeFromTarget(state.uri.queryParameters['from']);
         if (target == null || target == location) {
           // 无有效 from（含恶意 / 自引用）→ 回首页，防死循环
           return AppRoutes.home;
@@ -59,7 +59,7 @@ String? appRedirect(AuthState auth, GoRouterState state) {
 
 /// 校验深链 `from` 为站内路径：非绝对、无 scheme / host、以 `/` 开头。
 /// 不合法（开放重定向防护）返回 null，由调用方回落首页。
-String? _safeFromTarget(String? from) {
+String? safeFromTarget(String? from) {
   if (from == null || from.isEmpty || !from.startsWith('/')) {
     return null;
   }
